@@ -1,12 +1,21 @@
 #! /usr/bin/env python
 
+# Copyright 2010 Israel G. Lugo
+# <israel.lugo@lugosys.com>
+
+# $Id$
+
+
 import sys
 import os
 import mmap
 import hashlib
 
 
-files = {}
+existing_files_by_md5 = {}
+
+repeated_md5s = set()
+
 
 def _print_error(error):
     """Print a listing error to stderr.
@@ -92,7 +101,45 @@ def calculate_md5(filename, max_size=0):
 
 
 
+def analyze_file(filename, max_size, existing_files, repeated_md5s):
+    try:
+        md5 = calculate_md5(filename, max_size)
+    except OSError, e:
+        sys.stderr.write("%s: %s\n" % (e.filename, e.strerror))
+        return
+
+    if md5 not in existing_files:
+        # new file, initialize the MD5 entry with a list containing only
+        # this file
+        existing_files[md5] = [filename]
+    else:
+        # we found a duplicate, append this filename to the list of files with
+        # this MD5
+        existing_files[md5].append(filename)
+
+        # this MD5 has repeated files, add it to the set (it's ok if it was
+        # already there, the set won't add it twice)
+        repeated_md5s.add(md5)
+
+
+
+def get_md5_repetitions(existing_files, repeated_md5s):
+    repeated_files = []
+
+    for md5 in repeated_md5s:
+        # get the list of files that share this MD5
+        files_with_this_md5 = existing_files[md5]
+
+        repeated_files.append(files_with_this_md5)
+
+    return repeated_files
+
+
+
+# XXX: This function is not being used, to be removed
 def print_md5(filename):
+    """Calculate the MD5 of a file and print it."""
+
     try:
         print calculate_md5(filename), filename
     except OSError, e:
@@ -100,5 +147,34 @@ def print_md5(filename):
 
 
 
+def scan_directory(directory):
+    walk_directory(directory, analyze_file, [0, existing_files_by_md5, repeated_md5s])
+
+    return get_md5_repetitions(existing_files_by_md5, repeated_md5s)
+
+
+
+def show_usage():
+    sys.stdout.write("usage: %s <directories>...\n" % sys.argv[0])
+
+
+
 if __name__ == '__main__':
-    walk_directory('.', print_md5)
+
+    if len(sys.argv) < 2:
+        show_usage()
+        sys.exit(1)
+
+    directories_to_scan = sys.argv[1:]
+
+    repeated_files = []
+
+    for directory in directories_to_scan:
+        repeated_files += scan_directory(directory)
+
+    for equal_files in repeated_files:
+        equal_files.sort()
+        for filename in equal_files:
+            print filename
+        
+        print '-' * 30
