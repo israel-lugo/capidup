@@ -44,7 +44,7 @@ def walk_directory(root, func, func_args=[], func_kwargs={}):
             full_path = os.path.join(curr_dir, base_filename)
 
             # check if the filename is a regular file
-            if os.path.isfile(full_path):
+            if os.path.isfile(full_path) and not os.path.islink(full_path):
                 func(full_path, *func_args, **func_kwargs)
 
 
