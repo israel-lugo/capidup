@@ -150,6 +150,9 @@ def print_md5(filename):
 def scan_directory(directory):
     walk_directory(directory, analyze_file, [0, existing_files_by_md5, repeated_md5s])
 
+
+
+def get_repetitions():
     return get_md5_repetitions(existing_files_by_md5, repeated_md5s)
 
 
@@ -170,7 +173,9 @@ if __name__ == '__main__':
     repeated_files = []
 
     for directory in directories_to_scan:
-        repeated_files += scan_directory(directory)
+        scan_directory(directory)
+
+    repeated_files = get_repetitions()
 
     for equal_files in repeated_files:
         equal_files.sort()
