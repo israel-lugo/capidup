@@ -81,17 +81,19 @@ def calculate_md5(filename, max_size=0):
                 # calculate the MD5
                 md5_summer = hashlib.md5()
                 md5_summer.update(contents)
-                md5 = md5_summer.hexdigest()
+                md5 = md5_summer.digest()
 
             finally:
                 # free the memory map
                 contents.close()
 
         else:
-            # We can't memory-map an empty file on Windows. No need to
-            # calculate the actual MD5 anyway, we know the file is empty. Just
-            # return md5(''), which is the following known constant:
-            md5 = 'd41d8cd98f00b204e9800998ecf8427e'
+            # We can't memory-map an empty file on Windows. That's ok,
+            # though. We don't need to calculate the actual MD5 since we
+            # know the file is empty. Just return md5(''), which is the
+            # number d41d8cd98f00b204e9800998ecf8427e, represented here in
+            # binary:
+            md5 = '\xd4\x1d\x8c\xd9\x8f\x00\xb2\x04\xe9\x80\t\x98\xec\xf8\x42\x7e'
 
     finally:
         # close the file we just opened
@@ -102,6 +104,12 @@ def calculate_md5(filename, max_size=0):
 
 
 def analyze_file(filename, max_size, existing_files, repeated_md5s):
+    """Calculate a file's MD5 and register it as an existing file.
+
+    Only the first max_size bytes of the file are read (or the full files if 
+    If the file has a duplicate MD5, add it to the list of repeated MD5s.
+
+    """
     try:
         md5 = calculate_md5(filename, max_size)
     except OSError, e:
@@ -124,6 +132,13 @@ def analyze_file(filename, max_size, existing_files, repeated_md5s):
 
 
 def get_md5_repetitions(existing_files, repeated_md5s):
+    """Get the list of repeated files, by MD5.
+    
+    Returns a list of the the lists of the names of files which are
+    respectively identical among themselves (see find_identical_files for
+    an example).
+
+    """
     repeated_files = []
 
     for md5 in repeated_md5s:
@@ -136,23 +151,29 @@ def get_md5_repetitions(existing_files, repeated_md5s):
 
 
 
-# XXX: This function is not being used, to be removed
-def print_md5(filename):
-    """Calculate the MD5 of a file and print it."""
+def find_identical_files(directories):
+    """Recursively scan a list of directories, looking for identical files.
+    
+    The files are compared by content; their name is unimportant.
 
-    try:
-        print calculate_md5(filename), filename
-    except OSError, e:
-        sys.stderr.write("%s: %s\n" % (e.filename, e.strerror))
+    Returns a list containing the lists of the names of files which are
+    respectively identical among themselves, e.g.:
+        [
+          [ "file1", "copy_of_file1", "another_copy_of_file1" ],
+          [ "file2", "this_is_a_copy_of_file2" ],
+          [ "file3", "a_copy_of_file3", "backup_of_file3" ]
+        ]
 
+    """
+    global existing_files_by_md5, repeated_md5s
 
+    existing_files_by_md5 = {}
+    repeated_md5s = set()
 
-def scan_directory(directory):
-    walk_directory(directory, analyze_file, [0, existing_files_by_md5, repeated_md5s])
+    for directory in directories:
+        walk_directory(directory, analyze_file,
+                       [0, existing_files_by_md5, repeated_md5s])
 
-
-
-def get_repetitions():
     return get_md5_repetitions(existing_files_by_md5, repeated_md5s)
 
 
@@ -170,12 +191,7 @@ if __name__ == '__main__':
 
     directories_to_scan = sys.argv[1:]
 
-    repeated_files = []
-
-    for directory in directories_to_scan:
-        scan_directory(directory)
-
-    repeated_files = get_repetitions()
+    repeated_files = find_identical_files(directories_to_scan)
 
     for equal_files in repeated_files:
         equal_files.sort()
