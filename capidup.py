@@ -8,13 +8,30 @@
 
 import sys
 import os
-import mmap
+import stat
 import hashlib
 
 
-existing_files_by_md5 = {}
 
-repeated_md5s = set()
+# Chunk size in bytes, for reading file while calculating MD5
+MD5_CHUNK_SIZE = 512 * 1024
+
+# Increments (in bytes) for the partial read size (4096, the usual page
+# size for x86 on GNU/Linux and Windows, seems a good choice: GNU/Linux
+# seems to do faster when reading multiples of page size)
+PARTIAL_MD5_READ_INCREMENTS = 4 * 1024
+
+# Minimum file size, in bytes, above which we do a partial comparison before
+# trying the full thing
+PARTIAL_MD5_THRESHOLD = 2 * PARTIAL_MD5_READ_INCREMENTS
+
+# Maximum size of the partial read, in bytes
+PARTIAL_MD5_MAX_READ = 16 * PARTIAL_MD5_READ_INCREMENTS
+
+# How much of the file to read in a partial read (divider applied to the
+# file's size). Up to PARTIAL_MD5_MAX_READ
+PARTIAL_MD5_READ_RATIO = 4
+
 
 
 def _print_error(error):
@@ -28,132 +45,135 @@ def _print_error(error):
 
 
 
-def walk_directory(root, func, func_args=[], func_kwargs={}):
-    """Walk the file tree call a function for each file found.
-    
-    The function is given the file's full path as its first positional
-    argument, followed by any positional arguments specified in the func_args
-    list, and any keyword arguments specified in the func_kwargs dictionary.
+def round_up_to_mult(n, mult):
+    """Round an integer up to the next multiple."""
+
+    return ((n + mult - 1) // mult) * mult
+
+
+
+def index_files(root, files_by_size):
+    """Recursively index files under a root directory.
+
+    Each regular file is added *in-place* to the files_by_size dictionary,
+    according to the file size. This is a (possibly empty) dictionary of
+    lists of filenames, indexed by file size.
 
     """
-
-    # recurse into the the file tree under the specified root directory
     for curr_dir, subdirs, filenames in os.walk(root, onerror=_print_error):
 
         for base_filename in filenames:
             full_path = os.path.join(curr_dir, base_filename)
 
-            # check if the filename is a regular file
-            if os.path.isfile(full_path) and not os.path.islink(full_path):
-                func(full_path, *func_args, **func_kwargs)
+            file_info = os.lstat(full_path)
+
+            # only want regular files, not symlinks
+            if stat.S_ISREG(file_info.st_mode):
+                size = file_info.st_size
+
+                if size in files_by_size:
+                    # append to the list of files with the same size
+                    files_by_size[size].append(full_path)
+                else:
+                    # start a new list for this file size
+                    files_by_size[size] = [full_path]
 
 
 
-def calculate_md5(filename, max_size=0):
-    """Calculate the MD5 hash of a file, or a portion of a file.
+def calculate_md5(filename, length):
+    """Calculate the MD5 hash of a file, up to length bytes.
 
-    max_size specifies the maximum amount of bytes that should be read from
-    the file to calculate the MD5; a value of 0 means the whole file.
+    Returns the MD5 in its binary form, as an 8-byte string. Raises IOError
+    or OSError in case of error.
 
     """
-    assert max_size >= 0
+    assert length >= 0
 
-    file_descriptor = os.open(filename, os.O_RDONLY)
+    # shortcut: MD5 of an empty string is 'd41d8cd98f00b204e9800998ecf8427e',
+    # represented here in binary
+    if length == 0:
+        return '\xd4\x1d\x8c\xd9\x8f\x00\xb2\x04\xe9\x80\t\x98\xec\xf8\x42\x7e'
 
-    # process the file
+    md5_summer = hashlib.md5()
+
+    f = open(filename, 'r')
+
     try:
-        file_info = os.fstat(file_descriptor)
+        bytes_read = 0
 
-        if file_info.st_size != 0:
-            if max_size == 0:
-                # we're supposed to MD5 the whole file
-                md5_length = 0
-            else:
-                # read up to max_size bytes
-                md5_length = min(length, file_info.st_size)
+        while bytes_read < length:
+            chunk_size = min(MD5_CHUNK_SIZE, length - bytes_read)
 
-            try:
-                # map the desired portion of the file to memory (returns
-                # a string-and-file-like object)
-                contents = mmap.mmap(file_descriptor, md5_length,
-                                     access=mmap.ACCESS_READ)
+            chunk = f.read(chunk_size)
 
-                # calculate the MD5
-                md5_summer = hashlib.md5()
-                md5_summer.update(contents)
-                md5 = md5_summer.digest()
+            if not chunk:
+                # found EOF: means length was larger than the file size, or
+                # file was truncated while reading -- print warning?
+                break
 
-            finally:
-                # free the memory map
-                contents.close()
+            md5_summer.update(chunk)
 
-        else:
-            # We can't memory-map an empty file on Windows. That's ok,
-            # though. We don't need to calculate the actual MD5 since we
-            # know the file is empty. Just return md5(''), which is the
-            # number d41d8cd98f00b204e9800998ecf8427e, represented here in
-            # binary:
-            md5 = '\xd4\x1d\x8c\xd9\x8f\x00\xb2\x04\xe9\x80\t\x98\xec\xf8\x42\x7e'
+            bytes_read += len(chunk)
 
     finally:
-        # close the file we just opened
-        os.close(file_descriptor)
+        f.close()
+
+    md5 = md5_summer.digest()
 
     return md5
 
 
 
-def analyze_file(filename, max_size, existing_files, repeated_md5s):
-    """Calculate a file's MD5 and register it as an existing file.
+def find_duplicates(filenames, max_size):
+    """Find duplicates in a list of files, comparing up to max_size bytes.
 
-    Only the first max_size bytes of the file are read (or the full files if 
-    If the file has a duplicate MD5, add it to the list of repeated MD5s.
-
-    """
-    try:
-        md5 = calculate_md5(filename, max_size)
-    except OSError, e:
-        sys.stderr.write("%s: %s\n" % (e.filename, e.strerror))
-        return
-
-    if md5 not in existing_files:
-        # new file, initialize the MD5 entry with a list containing only
-        # this file
-        existing_files[md5] = [filename]
-    else:
-        # we found a duplicate, append this filename to the list of files with
-        # this MD5
-        existing_files[md5].append(filename)
-
-        # this MD5 has repeated files, add it to the set (it's ok if it was
-        # already there, the set won't add it twice)
-        repeated_md5s.add(md5)
-
-
-
-def get_md5_repetitions(existing_files, repeated_md5s):
-    """Get the list of repeated files, by MD5.
-    
-    Returns a list of the the lists of the names of files which are
-    respectively identical among themselves (see find_identical_files for
-    an example).
+    Returns a (possibly empty) list of the lists of names of files which
+    are respectively identical among themselves (see find_duplicates_in_dirs
+    for an example).
 
     """
-    repeated_files = []
+    global _errors_while_comparing
 
-    for md5 in repeated_md5s:
-        # get the list of files that share this MD5
-        files_with_this_md5 = existing_files[md5]
+    # shortcut: can't have duplicates if there aren't at least 2 files
+    if len(filenames) < 2:
+        return []
 
-        repeated_files.append(files_with_this_md5)
+    # shortcut: if comparing 0 bytes, they're all the same
+    if max_size == 0:
+        return [filenames]
 
-    return repeated_files
+    files_by_md5 = {}
+
+    for filename in filenames:
+        try:
+            md5 = calculate_md5(filename, max_size)
+        except EnvironmentError as e:
+            sys.stderr.write("unable to calculate MD5 for '%s': %s\n"
+                             % (filename, e.strerror))
+            _errors_while_comparing = True
+            continue
+
+        if md5 not in files_by_md5:
+            # unique beginning so far; index it on its own
+            files_by_md5[md5] = [filename]
+        else:
+            # found a potential duplicate (same beginning)
+            files_by_md5[md5].append(filename)
+
+    # Filter out the unique files (lists of files with the same md5 that
+    # only contain 1 file), and create a list of the lists of duplicates.
+    # Use itervalues() instead of values() to save memory, by not copying
+    # the entire (potentially very large) list of values in files_by_md5.
+    duplicates = [l for l in files_by_md5.itervalues() if len(l) >= 2]
+
+    return duplicates
 
 
 
-def find_identical_files(directories):
-    """Recursively scan a list of directories, looking for identical files.
-    
+
+def find_duplicates_in_dirs(directories):
+    """Recursively scan a list of directories, looking for duplicate files.
+
     The files are compared by content; their name is unimportant.
 
     Returns a list containing the lists of the names of files which are
@@ -165,16 +185,54 @@ def find_identical_files(directories):
         ]
 
     """
-    global existing_files_by_md5, repeated_md5s
+    files_by_size = {}
 
-    existing_files_by_md5 = {}
-    repeated_md5s = set()
-
+    # First, group all files by size
     for directory in directories:
-        walk_directory(directory, analyze_file,
-                       [0, existing_files_by_md5, repeated_md5s])
+        index_files(directory, files_by_size)
 
-    return get_md5_repetitions(existing_files_by_md5, repeated_md5s)
+    all_duplicates = []
+
+    # Now, within each file size, check for duplicates. There are a couple
+    # of memory optimizations here:
+    #
+    # 1. We iterate over the dictionary's keys (file sizes) and get the
+    # value (file list) from the dictionary when we need it, instead of
+    # expanding directly to (size, file list). This is to avoid having to
+    # keep the (potentially very large) file list for the entire duration
+    # inside the for. Inside the for we're already creating a temp list
+    # which may potentially be very large (possible_duplicates_list), and
+    # adding some of that to all_duplicates. We don't want to keep the
+    # original file list around longer than necessary.
+    #
+    # 2. We use iterkeys() to iterate the keys (file sizes), instead of
+    # keys(). keys() returns a new list of keys, which may be very large,
+    # whereas iterkeys() iterates over the dictionary's existing keys.
+    for size in files_by_size.iterkeys():
+        # for large file sizes, divide them further into groups by matching
+        # initial portion; how much of the file is used to match depends on
+        # the file size
+        if size >= PARTIAL_MD5_THRESHOLD:
+            partial_size = min(round_up_to_mult(size // PARTIAL_MD5_READ_RATIO,
+                                                PARTIAL_MD5_READ_INCREMENTS),
+                               PARTIAL_MD5_MAX_READ)
+
+            possible_duplicates_list = find_duplicates(files_by_size[size], partial_size)
+        else:
+            # small file size, group them all together and do full MD5s
+            possible_duplicates_list = [files_by_size[size]]
+
+
+        # Do full MD5 scan on suspected duplicates. calculate_md5 (and
+        # therefore find_duplicates) needs to know how many bytes to scan.
+        # We're using the file's size, as per stat(); this is a problem if
+        # the file is growning. We'll only scan up to the size the file had
+        # when we indexed. Would be better to somehow tell calculate_md5 to
+        # scan until EOF (e.g. give it a negative size).
+        for possible_duplicates in possible_duplicates_list:
+            all_duplicates += find_duplicates(possible_duplicates, size)
+
+    return all_duplicates
 
 
 
@@ -184,6 +242,9 @@ def show_usage():
 
 
 if __name__ == '__main__':
+    global _errors_while_comparing
+
+    _errors_while_comparing = False
 
     if len(sys.argv) < 2:
         show_usage()
@@ -191,11 +252,18 @@ if __name__ == '__main__':
 
     directories_to_scan = sys.argv[1:]
 
-    repeated_files = find_identical_files(directories_to_scan)
+    duplicate_files_list = find_duplicates_in_dirs(directories_to_scan)
 
-    for equal_files in repeated_files:
-        equal_files.sort()
-        for filename in equal_files:
+    # sort the list of lists of duplicate files, so files in the same
+    # directory show up near each other, instead of randomly scattered
+    duplicate_files_list.sort()
+    for duplicate_files in duplicate_files_list:
+        duplicate_files.sort()
+        for filename in duplicate_files:
             print filename
         
         print '-' * 30
+
+    if _errors_while_comparing:
+        sys.stderr.write("error: some files could not be compared\n")
+        sys.exit(1)
