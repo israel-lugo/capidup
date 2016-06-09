@@ -51,25 +51,48 @@ Capidup crawls the directories and gathers the list of files. Then, it takes a
 
 ## Considerations
 
-There is a small possibility of false positives.
+There is a *very small* possibility of false positives. For any given file,
+there is a 1 in 2<sup>64</sup> (1:18,446,744,073,709,551,616) chance of some
+other random file being detected as its duplicate by mistake.
 
-Two different files may have the same hash: this is called a collision.
-Capidup uses MD5 (which generates 128 bit hashes) for detecting whether the
-files are equal. It cannot distinguish between a case where both files are
-equal and a case where they just happen to generate the same MD5 hash. The odds
-of this happening by accident, though, for two files of the same size, are very
-low. Assuming a completely random distribution, it would be in the order of 1
-in 2<sup>64</sup>.
+The reason for this is that two different files may have the same hash: this is
+called a collision. Capidup uses MD5 (which generates 128 bit hashes) for
+detecting whether the files are equal. It cannot distinguish between a case
+where both files are equal and a case where they just happen to generate the
+same MD5 hash.
+
+The odds of this happening by accident, though, for two files of the same size,
+are really very low. For normal home use, dealing with movies, music, source
+code or other documents, this problem can be disregarded.
+
+## Security
+
+There is one case when care should be taken: when comparing files which might
+have been intentionally manipulated by a malicious attacker.
+
+While the chance of two random files having the same MD5 hash are really very
+low (as stated above), it *is* possible for a malicious attacker to purposely
+manipulate a file to have the same MD5 as another. The MD5 algorithm is not
+secure against intentional disception.
+
+This may be of concern for example when comparing things such as program
+installers. A malicious attacker could infect an installer with malware, and
+manipulate the rest of the file in such a way that it still has the same MD5 as
+the original. Comparing the two files, Capidup would show them as duplicates
+when they are not.
 
 ## Future plans
 
 Future plans for Capidup include having a configurable option to use a
 different hashing algorithm, such as SHA1 which has a larger hash size of 160
-bits, or SHA2 which allows hashes ranging from 224 to 512 bits. The probability
-of collisions then would be astronomically low. This will of course be slower,
+bits, or SHA2 which allows hashes up to 512 bits and has no publicly known
+collision attacks. SHA2 is currently used for most cryptographic purposes,
+where security is essential. False positives, random or maliciously provoked,
+would be practically impossible. Duplicate detection will of course be slower,
 depending on the chosen algorithm.
 
-There could even be an extra paranoid optional setting, which would check files
-with two different hashing algorithms. That would make it virtually impossible
-to have a collision, but the tradeoff in speed would probably not be worth it.
+For the extremely paranoid case, there could be an additional setting which
+would check files with two different hashing algorithms. The tradeoff in speed
+would not be worthwhile for any normal use case, but the possibility could be
+there.
 
