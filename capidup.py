@@ -75,7 +75,7 @@ def index_files(root, files_by_size):
     lists of filenames, indexed by file size.
 
     """
-    for curr_dir, subdirs, filenames in os.walk(root, onerror=_print_error):
+    for curr_dir, _, filenames in os.walk(root, onerror=_print_error):
 
         for base_filename in filenames:
             full_path = os.path.join(curr_dir, base_filename)
