@@ -1,7 +1,7 @@
 # Capidup
 
 [![license](https://img.shields.io/badge/license-GPLv3+-blue.svg)](LICENSE)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/15155f1c5c454678923f5fb79401d151)](https://www.codacy.com/app/israel-lugo/capidup?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=israel-lugo/capidup&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/15155f1c5c454678923f5fb79401d151)](https://www.codacy.com/app/israel-lugo/capidup)
 
 Quickly find duplicate files in directories
 
