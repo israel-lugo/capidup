@@ -276,7 +276,7 @@ if __name__ == '__main__':
         duplicate_files.sort()
         for filename in duplicate_files:
             print filename
-        
+
         print '-' * 30
 
     if _errors_while_comparing:
