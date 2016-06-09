@@ -257,8 +257,8 @@ def show_usage():
 
 
 if __name__ == '__main__':
-    global _errors_while_comparing
 
+    # this is updated by find_duplicates in case of errors while comparing
     _errors_while_comparing = False
 
     if len(sys.argv) < 2:
