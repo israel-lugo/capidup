@@ -31,17 +31,17 @@ import hashlib
 # Chunk size in bytes, for reading file while calculating MD5
 MD5_CHUNK_SIZE = 512 * 1024
 
-# Increments (in bytes) for the partial read size (4096, the usual page
+# Multiple (in bytes) for the partial read size (4096, the usual page
 # size for x86 on GNU/Linux and Windows, seems a good choice: GNU/Linux
 # seems to do faster when reading multiples of page size)
-PARTIAL_MD5_READ_INCREMENTS = 4 * 1024
+PARTIAL_MD5_READ_MULT = 4 * 1024
 
 # Minimum file size, in bytes, above which we do a partial comparison before
 # trying the full thing
-PARTIAL_MD5_THRESHOLD = 2 * PARTIAL_MD5_READ_INCREMENTS
+PARTIAL_MD5_THRESHOLD = 2 * PARTIAL_MD5_READ_MULT
 
 # Maximum size of the partial read, in bytes
-PARTIAL_MD5_MAX_READ = 16 * PARTIAL_MD5_READ_INCREMENTS
+PARTIAL_MD5_MAX_READ = 16 * PARTIAL_MD5_READ_MULT
 
 # How much of the file to read in a partial read (divider applied to the
 # file's size). Up to PARTIAL_MD5_MAX_READ
@@ -229,7 +229,7 @@ def find_duplicates_in_dirs(directories):
         # the file size
         if size >= PARTIAL_MD5_THRESHOLD:
             partial_size = min(round_up_to_mult(size // PARTIAL_MD5_READ_RATIO,
-                                                PARTIAL_MD5_READ_INCREMENTS),
+                                                PARTIAL_MD5_READ_MULT),
                                PARTIAL_MD5_MAX_READ)
 
             possible_duplicates_list = find_duplicates(files_by_size[size], partial_size)
