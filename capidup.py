@@ -21,6 +21,23 @@
 # For suggestions, feedback or bug reports: israel.lugo@lugosys.com
 
 
+"""Quickly find duplicate files in directories.
+
+Public functions:
+
+    find_duplicates -- find duplicates in a list of files
+    find_duplicates_in_dirs -- find duplicates in a list of directories
+
+Public data attributes:
+
+    MD5_CHUNK_SIZE -- block size for reading when calculating MD5
+    PARTIAL_MD5_MAX_READ -- max size of partial read
+    PARTIAL_MD5_READ_MULT -- partial read size must be a multiple of this
+    PARTIAL_MD5_READ_RATIO -- how much (1/n) of a file to read in partial read
+    PARTIAL_MD5_THRESHOLD -- file size above which a partial read is done
+
+"""
+
 import sys
 import os
 import stat
