@@ -27,6 +27,10 @@ import stat
 import hashlib
 
 
+__all__ = [ "find_duplicates", "find_duplicates_in_dirs", "MD5_CHUNK_SIZE",
+        "PARTIAL_MD5_READ_MULT", "PARTIAL_MD5_THRESHOLD",
+        "PARTIAL_MD5_MAX_READ", "PARTIAL_MD5_READ_RATIO" ]
+
 
 # Chunk size in bytes, for reading file while calculating MD5
 MD5_CHUNK_SIZE = 512 * 1024
