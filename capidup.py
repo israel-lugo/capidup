@@ -252,6 +252,8 @@ def find_duplicates_in_dirs(directories):
 
 
 def show_usage():
+    """Print usage information."""
+
     sys.stdout.write("usage: %s <directories>...\n" % sys.argv[0])
 
 
