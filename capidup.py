@@ -262,7 +262,7 @@ def find_duplicates_in_dirs(directories):
         # Do full MD5 scan on suspected duplicates. calculate_md5 (and
         # therefore find_duplicates) needs to know how many bytes to scan.
         # We're using the file's size, as per stat(); this is a problem if
-        # the file is growning. We'll only scan up to the size the file had
+        # the file is growing. We'll only scan up to the size the file had
         # when we indexed. Would be better to somehow tell calculate_md5 to
         # scan until EOF (e.g. give it a negative size).
         for possible_duplicates in possible_duplicates_list:
