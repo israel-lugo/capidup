@@ -88,7 +88,7 @@ def round_up_to_mult(n, mult):
 
 
 
-def index_files(root, files_by_size):
+def index_files_by_size(root, files_by_size):
     """Recursively index files under a root directory.
 
     Each regular file is added *in-place* to the files_by_size dictionary,
@@ -225,7 +225,7 @@ def find_duplicates_in_dirs(directories):
 
     # First, group all files by size
     for directory in directories:
-        index_files(directory, files_by_size)
+        index_files_by_size(directory, files_by_size)
 
     all_duplicates = []
 
