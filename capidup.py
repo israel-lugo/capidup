@@ -70,17 +70,6 @@ PARTIAL_MD5_READ_RATIO = 4
 
 
 
-def _print_error(error):
-    """Print a listing error to stderr.
-
-    error should be an os.OSError instance.
-
-    """
-    sys.stderr.write("error listing '%s': %s\n"
-                     % (error.filename, error.strerror))
-
-
-
 def round_up_to_mult(n, mult):
     """Round an integer up to the next multiple."""
 
@@ -95,7 +84,27 @@ def index_files_by_size(root, files_by_size):
     according to the file size. This is a (possibly empty) dictionary of
     lists of filenames, indexed by file size.
 
+    Returns True if there were any I/O errors while listing directories.
+
     """
+    # encapsulate the value in a list, so we can modify it by reference
+    # inside the auxiliary function
+    errors = [False]
+
+    def _print_error(error):
+        """Print a listing error to stderr.
+
+        error should be an os.OSError instance.
+
+        """
+        # modify the outside errors value; must be encapsulated in a list,
+        # because if we assign to a variable here we just create an
+        # independent local copy
+        errors[0] = True
+        sys.stderr.write("error listing '%s': %s\n"
+                         % (error.filename, error.strerror))
+
+
     for curr_dir, _, filenames in os.walk(root, onerror=_print_error):
 
         for base_filename in filenames:
@@ -113,6 +122,8 @@ def index_files_by_size(root, files_by_size):
                 else:
                     # start a new list for this file size
                     files_by_size[size] = [full_path]
+
+    return errors[0]
 
 
 
@@ -163,20 +174,27 @@ def calculate_md5(filename, length):
 def find_duplicates(filenames, max_size):
     """Find duplicates in a list of files, comparing up to max_size bytes.
 
-    Returns a (possibly empty) list of the lists of names of files which
-    are respectively identical among themselves (see find_duplicates_in_dirs
-    for an example).
+    Returns a tuple of two values. The second value is a boolean indicating
+    whether any I/O errors ocurred during scanning. The first value is a
+    (possibly empty) list of lists: the names of files with at least one
+    duplicate, grouped together with their own duplicates. For example:
+
+        [
+          [ "file1", "copy_of_file1", "another_copy_of_file1" ],
+          [ "file2", "this_is_a_copy_of_file2" ],
+          [ "file3", "a_copy_of_file3", "backup_of_file3" ]
+        ]
 
     """
-    global _errors_while_comparing
+    had_errors = False
 
     # shortcut: can't have duplicates if there aren't at least 2 files
     if len(filenames) < 2:
-        return []
+        return [], had_errors
 
     # shortcut: if comparing 0 bytes, they're all the same
     if max_size == 0:
-        return [filenames]
+        return [filenames], had_errors
 
     files_by_md5 = {}
 
@@ -186,7 +204,7 @@ def find_duplicates(filenames, max_size):
         except EnvironmentError as e:
             sys.stderr.write("unable to calculate MD5 for '%s': %s\n"
                              % (filename, e.strerror))
-            _errors_while_comparing = True
+            had_errors = True
             continue
 
         if md5 not in files_by_md5:
@@ -202,7 +220,7 @@ def find_duplicates(filenames, max_size):
     # the entire (potentially very large) list of values in files_by_md5.
     duplicates = [l for l in files_by_md5.itervalues() if len(l) >= 2]
 
-    return duplicates
+    return duplicates, had_errors
 
 
 
@@ -212,8 +230,11 @@ def find_duplicates_in_dirs(directories):
 
     The files are compared by content; their name is unimportant.
 
-    Returns a list containing the lists of the names of files which are
-    respectively identical among themselves, e.g.:
+    Returns a tuple of two values. The second value is a boolean indicating
+    whether any I/O errors ocurred during scanning. The first value is a
+    (possibly empty) list of lists: the names of files with at least one
+    duplicate, grouped together with their own duplicates. For example:
+
         [
           [ "file1", "copy_of_file1", "another_copy_of_file1" ],
           [ "file2", "this_is_a_copy_of_file2" ],
@@ -221,11 +242,13 @@ def find_duplicates_in_dirs(directories):
         ]
 
     """
+    errors_in_total = False
     files_by_size = {}
 
     # First, group all files by size
     for directory in directories:
-        index_files_by_size(directory, files_by_size)
+        had_errors = index_files_by_size(directory, files_by_size)
+        errors_in_total = errors_in_total or had_errors
 
     all_duplicates = []
 
@@ -253,7 +276,8 @@ def find_duplicates_in_dirs(directories):
                                                 PARTIAL_MD5_READ_MULT),
                                PARTIAL_MD5_MAX_READ)
 
-            possible_duplicates_list = find_duplicates(files_by_size[size], partial_size)
+            possible_duplicates_list, had_errors = find_duplicates(files_by_size[size], partial_size)
+            errors_in_total = errors_in_total or had_errors
         else:
             # small file size, group them all together and do full MD5s
             possible_duplicates_list = [files_by_size[size]]
@@ -266,9 +290,11 @@ def find_duplicates_in_dirs(directories):
         # when we indexed. Would be better to somehow tell calculate_md5 to
         # scan until EOF (e.g. give it a negative size).
         for possible_duplicates in possible_duplicates_list:
-            all_duplicates += find_duplicates(possible_duplicates, size)
+            duplicates, had_errors = find_duplicates(possible_duplicates, size)
+            all_duplicates += duplicates
+            errors_in_total = errors_in_total or had_errors
 
-    return all_duplicates
+    return all_duplicates, errors_in_total
 
 
 
@@ -281,8 +307,7 @@ def show_usage():
 
 if __name__ == '__main__':
 
-    # this is updated by find_duplicates in case of errors while comparing
-    _errors_while_comparing = False
+    had_errors = False
 
     if len(sys.argv) < 2:
         show_usage()
@@ -290,7 +315,7 @@ if __name__ == '__main__':
 
     directories_to_scan = sys.argv[1:]
 
-    duplicate_files_list = find_duplicates_in_dirs(directories_to_scan)
+    duplicate_files_list, had_errors = find_duplicates_in_dirs(directories_to_scan)
 
     # sort the list of lists of duplicate files, so files in the same
     # directory show up near each other, instead of randomly scattered
@@ -302,7 +327,7 @@ if __name__ == '__main__':
 
         print '-' * 30
 
-    if _errors_while_comparing:
+    if had_errors:
         sys.stderr.write("error: some files could not be compared\n")
         sys.exit(1)
 
