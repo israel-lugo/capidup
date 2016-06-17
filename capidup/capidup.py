@@ -42,6 +42,12 @@ def show_usage():
 
 
 def main(argv):
+    """Main program function.
+
+    Receives the list of command-line arguments.
+
+    """
+
     global prog_name
 
     prog_name = os.path.basename(argv[0])
