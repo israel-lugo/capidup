@@ -1,3 +1,6 @@
+
+"""Package information for capidup."""
+
 from distutils.core import setup
 
 setup(
