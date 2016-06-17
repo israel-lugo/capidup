@@ -23,7 +23,7 @@
 
 import random
 
-import capidup.capidup
+import capidup.finddups as finddups
 
 
 RANDOM_REPEATS=100
@@ -34,7 +34,7 @@ MAX_RANDOM_NUM=100000000002
 def try_value(n, mult, expected):
     """round_up_to_mult(n, m) = e"""
 
-    rounded = capidup.capidup.round_up_to_mult(n, mult)
+    rounded = finddups.round_up_to_mult(n, mult)
 
     assert rounded == expected
 
@@ -73,7 +73,7 @@ def test_generic():
         n = random.randrange(0, MAX_RANDOM_NUM)
         mult = random.randrange(1, MAX_RANDOM_NUM)
 
-        rounded = capidup.capidup.round_up_to_mult(n, mult)
+        rounded = finddups.round_up_to_mult(n, mult)
 
         assert rounded % mult == 0
         assert rounded - mult <= n
