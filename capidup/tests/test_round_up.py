@@ -47,7 +47,7 @@ def test_primes():
 def test_generic():
     """round_up_to_mult(r1, r2) = k*r2"""
 
-    for i in range(RANDOM_REPEATS):
+    for _ in range(RANDOM_REPEATS):
         n = random.randrange(0, MAX_RANDOM_NUM)
         mult = random.randrange(1, MAX_RANDOM_NUM)
 
