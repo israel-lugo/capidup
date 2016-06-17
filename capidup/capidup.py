@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 # capidup - quickly find duplicate files in directories
-# Copyright (C) 2010,2014 Israel G. Lugo
+# Copyright (C) 2010,2014,2016 Israel G. Lugo
 #
 # This file is part of capidup.
 #
