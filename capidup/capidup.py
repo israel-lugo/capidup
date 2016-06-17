@@ -89,7 +89,7 @@ def index_files_by_size(root, files_by_size):
     """
     # encapsulate the value in a list, so we can modify it by reference
     # inside the auxiliary function
-    errors = [False]
+    had_errors_wrapper = [False]
 
     def _print_error(error):
         """Print a listing error to stderr.
@@ -100,7 +100,7 @@ def index_files_by_size(root, files_by_size):
         # modify the outside errors value; must be encapsulated in a list,
         # because if we assign to a variable here we just create an
         # independent local copy
-        errors[0] = True
+        had_errors_wrapper[0] = True
         sys.stderr.write("error listing '%s': %s\n"
                          % (error.filename, error.strerror))
 
@@ -123,7 +123,7 @@ def index_files_by_size(root, files_by_size):
                     # start a new list for this file size
                     files_by_size[size] = [full_path]
 
-    return errors[0]
+    return had_errors_wrapper[0]
 
 
 
