@@ -56,7 +56,7 @@ def test_one_below():
 def test_same():
     """round_up_to_mult(x, x) = x"""
 
-    for i in range(RANDOM_REPEATS):
+    for _ in range(RANDOM_REPEATS):
         n = random.randrange(0, MAX_RANDOM_NUM)
 
         try_value(n, n, n)
