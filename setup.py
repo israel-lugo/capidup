@@ -1,7 +1,7 @@
 
 """Package information for capidup."""
 
-from distutils.core import setup
+from setuptools import setup
 
 setup(
     name='capidup',
@@ -10,7 +10,7 @@ setup(
     author_email='israel.lugo@lugosys.com',
     version='1.0dev',
     packages=['capidup',],
-    entry_points = {
+    entry_points={
         'console_scripts': [ 'capidup=capidup.cli:main' ],
     },
     license='License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
