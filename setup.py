@@ -3,12 +3,15 @@
 
 from setuptools import setup
 
+# get __version__
+exec(compile(open('capidup/version.py').read(), 'capidup/version.py', 'exec'))
+
 setup(
     name='capidup',
     description='Quickly find duplicate files in directories',
     author="Israel G. Lugo",
     author_email='israel.lugo@lugosys.com',
-    version='1.0.dev1',
+    version=__version__,
     packages=['capidup',],
     entry_points={
         'console_scripts': [ 'capidup=capidup.cli:main' ],
