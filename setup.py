@@ -8,7 +8,7 @@ setup(
     description='Quickly find duplicate files in directories',
     author="Israel G. Lugo",
     author_email='israel.lugo@lugosys.com',
-    version='1.0dev',
+    version='1.0.dev1',
     packages=['capidup',],
     entry_points={
         'console_scripts': [ 'capidup=capidup.cli:main' ],
