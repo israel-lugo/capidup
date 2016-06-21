@@ -3,8 +3,7 @@
 
 from setuptools import setup
 
-# get __version__
-exec(compile(open('capidup/version.py').read(), 'capidup/version.py', 'exec'))
+from capidup.version import __version__
 
 setup(
     name='capidup',
