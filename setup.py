@@ -4,12 +4,15 @@
 from distutils.core import setup
 
 setup(
-    name='Capidup',
+    name='capidup',
     description='Quickly find duplicate files in directories',
     author="Israel G. Lugo",
     author_email='israel.lugo@lugosys.com',
     version='1.0dev',
     packages=['capidup',],
+    entry_points = {
+        'console_scripts': [ 'capidup=capidup.cli:main' ],
+    },
     license='License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
     long_description="""
 Capidup recursively crawls through all the files in a list of directories and
