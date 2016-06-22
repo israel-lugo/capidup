@@ -31,37 +31,41 @@
 
 import sys
 import os
+import argparse
 
 import finddups
+
+from version import __version__
 
 
 __all__ = [ 'main' ]
 
 
-prog_name = "<capidup>"
 
+def parse_args():
+    parser = argparse.ArgumentParser(
+            description="Quickly find duplicate files in directories.")
 
-def show_usage():
-    """Print usage information."""
+    parser.add_argument('directories', nargs='+', metavar='directory', help="where to scan for duplicates")
 
-    sys.stdout.write("usage: %s <directories>...\n" % prog_name)
+    # This doesn't show license information, a la GNU. Would be nice.
+    # Create a custom Action that prints what we want and exits?  Can't
+    # place everything in "version" string, because the default formatter
+    # wraps everything.
+    parser.add_argument('-V', '--version', action='version', version="CapiDup %s" % __version__)
+
+    args = parser.parse_args()
+
+    return args
 
 
 def main():
     """Main program function."""
 
-    global prog_name
-
-    prog_name = os.path.basename(sys.argv[0])
-
-    if len(sys.argv) < 2:
-        show_usage()
-        sys.exit(1)
-
-    directories_to_scan = sys.argv[1:]
+    args = parse_args()
 
     had_errors = False
-    duplicate_files_list, had_errors = finddups.find_duplicates_in_dirs(directories_to_scan)
+    duplicate_files_list, had_errors = finddups.find_duplicates_in_dirs(args.directories)
 
     # sort the list of lists of duplicate files, so files in the same
     # directory show up near each other, instead of randomly scattered
