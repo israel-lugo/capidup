@@ -43,6 +43,11 @@ __all__ = [ 'main' ]
 
 
 def parse_args():
+    """Parse command-line arguments.
+
+    Returns a populated namespace with all arguments and their values.
+
+    """
     parser = argparse.ArgumentParser(
             description="Quickly find duplicate files in directories.")
 
