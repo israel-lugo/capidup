@@ -43,7 +43,7 @@ known_values = [
 # generate a list of (n, n, n) tuples, times RANDOM_REPEATS
 random_same = [
     (_n, _n, _n)
-    for _n in 
+    for _n in
         map(lambda _: random.randrange(0, MAX_RANDOM_NUM),
             range(RANDOM_REPEATS))
 ]
