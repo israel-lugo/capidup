@@ -40,17 +40,27 @@ known_values = [
     (1632479, 744829, 2234487),
 ]
 
-# generate a list of (n, n, n) tuples, times RANDOM_REPEATS
-random_same = [
+# list of (n, n, n) tuples, with length RANDOM_REPEATS
+_random_same = [
     (_n, _n, _n)
     for _n in
         map(lambda _: random.randrange(0, MAX_RANDOM_NUM),
             range(RANDOM_REPEATS))
 ]
 
-testdata = known_values + random_same
 
-@pytest.mark.parametrize("n, mult, expected", testdata)
+# list of (n, m) tuples, with length RANDOM_REPEATS, where
+# n >= 0 and m >= 1
+_random_n_mult = [
+    (n, mult)
+    for n, mult in
+        map(lambda _: (random.randrange(0, MAX_RANDOM_NUM),
+                       random.randrange(1, MAX_RANDOM_NUM)),
+            range(RANDOM_REPEATS))
+]
+
+
+@pytest.mark.parametrize("n, mult, expected", known_values+_random_same)
 def test_known_values(n, mult, expected):
     """round_up_to_mult(n, m) = e"""
 
@@ -59,16 +69,13 @@ def test_known_values(n, mult, expected):
     assert rounded == expected
 
 
-def test_generic():
-    """round_up_to_mult(r1, r2) = k*r2"""
+@pytest.mark.parametrize("n, mult", _random_n_mult)
+def test_invariants(n, mult):
+    """round_up_to_mult(n, mult) = x, x = k*mult, x-mult <= n <= x"""
 
-    for _ in range(RANDOM_REPEATS):
-        n = random.randrange(0, MAX_RANDOM_NUM)
-        mult = random.randrange(1, MAX_RANDOM_NUM)
+    rounded = finddups.round_up_to_mult(n, mult)
 
-        rounded = finddups.round_up_to_mult(n, mult)
-
-        assert rounded % mult == 0
-        assert rounded - mult <= n
-        assert n <= rounded
+    assert rounded % mult == 0
+    assert rounded - mult <= n
+    assert n <= rounded
 
