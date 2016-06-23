@@ -42,21 +42,16 @@ known_values = [
 
 # list of (n, n, n) tuples, with length RANDOM_REPEATS
 _random_same = [
-    (_n, _n, _n)
-    for _n in
-        map(lambda _: random.randrange(0, MAX_RANDOM_NUM),
-            range(RANDOM_REPEATS))
+    (random.randrange(0, MAX_RANDOM_NUM),) * 3
+    for _ in range(RANDOM_REPEATS)
 ]
 
 
 # list of (n, m) tuples, with length RANDOM_REPEATS, where
 # n >= 0 and m >= 1
 _random_n_mult = [
-    (n, mult)
-    for n, mult in
-        map(lambda _: (random.randrange(0, MAX_RANDOM_NUM),
-                       random.randrange(1, MAX_RANDOM_NUM)),
-            range(RANDOM_REPEATS))
+    (random.randrange(0, MAX_RANDOM_NUM), random.randrange(1, MAX_RANDOM_NUM))
+    for _ in range(RANDOM_REPEATS)
 ]
 
 
