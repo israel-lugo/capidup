@@ -21,8 +21,6 @@
 
 """Black box duplicates testing."""
 
-import random
-
 import pytest
 
 import capidup.finddups as finddups
