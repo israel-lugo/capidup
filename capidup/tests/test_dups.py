@@ -69,7 +69,7 @@ def test_empty_dir(tmpdir):
     dups, errors = finddups.find_duplicates_in_dirs([str(tmpdir)])
 
     assert not errors
-    assert(len(dups) == 0)
+    assert len(dups) == 0
 
 
 @pytest.mark.parametrize("file_groups", testdata)
@@ -84,35 +84,35 @@ def test_flat_find_dups_in_dirs(tmpdir, file_groups):
 
     """
     name_groups = []
-    group_num = 0
-    for file_group in file_groups:
+    for group_num, file_group in enumerate(file_groups):
         names = []
-        file_num = 0
-        for file_content in file_group:
+
+        # create the files in this group of duplicates
+        for file_num, file_content in enumerate(file_group):
             basename = "g%d_file%d" % (group_num, file_num)
 
             f = tmpdir.join(basename)
             f.write(file_content)
 
             names.append(str(f))
-            file_num += 1
 
         name_groups.append(names)
-        group_num += 1
 
-    expected_dups = [names for names in name_groups if len(names) > 1]
+    # don't consider groups that only have one file (it will not be
+    # considered a duplicate if it's alone)
+    expected_dup_groups = [names for names in name_groups if len(names) > 1]
 
-    dups, errors = finddups.find_duplicates_in_dirs([str(tmpdir)])
+    dup_groups, errors = finddups.find_duplicates_in_dirs([str(tmpdir)])
 
     assert not errors
-    assert len(dups) == len(expected_dups)
+    assert len(dup_groups) == len(expected_dup_groups)
 
     # the files may have been traversed in a different order from how we
     # created them; sort both lists
-    dups.sort()
-    expected_dups.sort()
+    dup_groups.sort()
+    expected_dup_groups.sort()
 
-    for i in range(len(dups)):
-        assert len(dups[i]) == len(expected_dups[i])
-        assert sorted(dups[i]) == sorted(expected_dups[i])
+    for i in range(len(dup_groups)):
+        assert len(dup_groups[i]) == len(expected_dup_groups[i])
+        assert sorted(dup_groups[i]) == sorted(expected_dup_groups[i])
 
