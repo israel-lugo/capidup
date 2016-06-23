@@ -2,6 +2,7 @@
 
 [![license](https://img.shields.io/badge/license-GPLv3+-blue.svg)](LICENSE)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/15155f1c5c454678923f5fb79401d151)](https://www.codacy.com/app/israel-lugo/capidup)
+[![Build Status](https://travis-ci.org/israel-lugo/capidup.svg?branch=master)](https://travis-ci.org/israel-lugo/capidup)
 
 Quickly find duplicate files in directories
 
