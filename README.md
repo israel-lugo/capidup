@@ -1,21 +1,21 @@
-# Capidup
+# CapiDup
 
 [![license](https://img.shields.io/badge/license-GPLv3+-blue.svg)](LICENSE)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/15155f1c5c454678923f5fb79401d151)](https://www.codacy.com/app/israel-lugo/capidup)
 
 Quickly find duplicate files in directories
 
-Capidup recursively crawls through all the files in a list of directories and
+CapiDup recursively crawls through all the files in a list of directories and
 identifies duplicate files. Duplicate files are files with the exact same
 content, regardless of their name, location or timestamp.
 
 This program is designed to be quite fast. It uses a smart algorithm to detect
-and group duplicate files using a single pass on each file (that is, Capidup
+and group duplicate files using a single pass on each file (that is, CapiDup
 doesn't need to compare each file to every other).
 
 ## Usage
 
-Using Capidup is quite simple:
+Using CapiDup is quite simple:
 
 ```bash
 $ capidup /media/sdcard/DCIM ~/photos
@@ -36,7 +36,7 @@ Here we find out that /media/sdcard/DCIM/DSC_1137.JPG is a duplicate of
 
 ## Algorithm
 
-Capidup crawls the directories and gathers the list of files. Then, it takes a
+CapiDup crawls the directories and gathers the list of files. Then, it takes a
 3-step approach:
 
  1. Files are grouped by size (files of different size must obviously be
@@ -56,7 +56,7 @@ there is a 1 in 2<sup>64</sup> (1:18,446,744,073,709,551,616) chance of some
 other random file being detected as its duplicate by mistake.
 
 The reason for this is that two different files may have the same hash: this is
-called a collision. Capidup uses MD5 (which generates 128 bit hashes) for
+called a collision. CapiDup uses MD5 (which generates 128 bit hashes) for
 detecting whether the files are equal. It cannot distinguish between a case
 where both files are equal and a case where they just happen to generate the
 same MD5 hash.
@@ -78,12 +78,12 @@ secure against intentional disception.
 This may be of concern for example when comparing things such as program
 installers. A malicious attacker could infect an installer with malware, and
 manipulate the rest of the file in such a way that it still has the same MD5 as
-the original. Comparing the two files, Capidup would show them as duplicates
+the original. Comparing the two files, CapiDup would show them as duplicates
 when they are not.
 
 ## Future plans
 
-Future plans for Capidup include having a configurable option to use a
+Future plans for CapiDup include having a configurable option to use a
 different hashing algorithm, such as SHA1 which has a larger hash size of 160
 bits, or SHA2 which allows hashes up to 512 bits and has no publicly known
 collision attacks. SHA2 is currently used for most cryptographic purposes,
