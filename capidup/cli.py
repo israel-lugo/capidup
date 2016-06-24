@@ -32,9 +32,9 @@
 import sys
 import argparse
 
-import finddups
+import capidup.finddups as finddups
 
-from version import __version__
+from capidup.version import __version__
 
 
 __all__ = [ 'main' ]
