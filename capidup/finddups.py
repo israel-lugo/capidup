@@ -251,19 +251,9 @@ def find_duplicates_in_dirs(directories):
 
     all_duplicates = []
 
-    # Now, within each file size, check for duplicates. There are a couple
-    # of memory optimizations here:
+    # Now, within each file size, check for duplicates.
     #
-    # 1. We iterate over the dictionary's keys (file sizes) and get the
-    # value (file list) from the dictionary when we need it, instead of
-    # expanding directly to (size, file list). This is to avoid having to
-    # keep the (potentially very large) file list for the entire duration
-    # inside the for. Inside the for we're already creating a temp list
-    # which may potentially be very large (possible_duplicates_list), and
-    # adding some of that to all_duplicates. We don't want to keep the
-    # original file list around longer than necessary.
-    #
-    # 2. We use iterkeys() to iterate the keys (file sizes), instead of
+    # We use iterkeys() to iterate the keys (file sizes), instead of
     # keys(). keys() returns a new list of keys, which may be very large,
     # whereas iterkeys() iterates over the dictionary's existing keys.
     for size in files_by_size.iterkeys():
