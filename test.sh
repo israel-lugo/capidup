@@ -20,7 +20,7 @@ for i in pytest .; do
   pip install "$i" || unvenv_die "unable to install $i inside virtualenv"
 done
 
-python -m pytest --pyargs capidup
+py.test capidup
 
 deactivate
 
