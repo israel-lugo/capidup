@@ -14,6 +14,8 @@ This program is designed to be quite fast. It uses a smart algorithm to detect
 and group duplicate files using a single pass on each file (that is, CapiDup
 doesn't need to compare each file to every other).
 
+CapiDup fully supports both Python 2 and Python 3.
+
 ## Usage
 
 Using CapiDup is quite simple:
