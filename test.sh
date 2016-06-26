@@ -11,17 +11,35 @@ unvenv_die() {
   die "$1"
 }
 
-venv=$(mktemp -d --tmpdir capidup-venv-XXXXXX) || die "unable to create temp directory"
+# Test a specific Python version.
+#
+# Receives the name of the desired python executable file.
+#
+# Example:
+#   test_python "python2"
+#   test_python "python3.4"
+test_python() {
+  local python_exe="$1"
+  local status
 
-virtualenv "$venv"
-source "$venv/bin/activate"
+  venv=$(mktemp -d --tmpdir capidup-venv-XXXXXX) || die "unable to create temp directory"
 
-for i in pytest .; do
-  pip install "$i" || unvenv_die "unable to install $i inside virtualenv"
-done
+  virtualenv --python="$python_exe" "$venv"
+  source "$venv/bin/activate"
 
-py.test capidup
+  for i in pytest .; do
+    pip install "$i" || unvenv_die "unable to install $i inside virtualenv"
+  done
 
-deactivate
+  py.test capidup
+  status=$?
 
-rm -rf "$venv"
+  deactivate
+
+  rm -rf "$venv"
+
+  return $status
+}
+
+test_python "python2"
+test_python "python3"
