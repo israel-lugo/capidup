@@ -29,6 +29,9 @@
 # which is defined as a package entry point in setup.py.
 
 
+# be compatible with Python 3
+from __future__ import print_function
+
 import sys
 import argparse
 
@@ -77,9 +80,9 @@ def main():
     for duplicate_files in duplicate_files_list:
         duplicate_files.sort()
         for filename in duplicate_files:
-            print filename
+            print(filename)
 
-        print '-' * 30
+        print('-' * 30)
 
     if had_errors:
         sys.stderr.write("error: some files could not be compared\n")
