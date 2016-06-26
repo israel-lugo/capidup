@@ -42,6 +42,8 @@ import os
 import stat
 import hashlib
 
+from capidup import py3compat
+
 
 __all__ = [ "find_duplicates", "find_duplicates_in_dirs", "MD5_CHUNK_SIZE",
         "PARTIAL_MD5_READ_MULT", "PARTIAL_MD5_THRESHOLD",
@@ -215,9 +217,9 @@ def find_duplicates(filenames, max_size):
 
     # Filter out the unique files (lists of files with the same md5 that
     # only contain 1 file), and create a list of the lists of duplicates.
-    # Use itervalues() instead of values() to save memory, by not copying
-    # the entire (potentially very large) list of values in files_by_md5.
-    duplicates = [l for l in files_by_md5.itervalues() if len(l) >= 2]
+    # Don't use values() because on Python 2 this creates a list of all
+    # values (file lists), and that may be very large.
+    duplicates = [l for l in py3compat.itervalues(files_by_md5) if len(l) >= 2]
 
     return duplicates, had_errors
 
@@ -253,10 +255,10 @@ def find_duplicates_in_dirs(directories):
 
     # Now, within each file size, check for duplicates.
     #
-    # We use iterkeys() to iterate the keys (file sizes), instead of
-    # keys(). keys() returns a new list of keys, which may be very large,
-    # whereas iterkeys() iterates over the dictionary's existing keys.
-    for size in files_by_size.iterkeys():
+    # We use an iterator over the dict (which gives us the keys), instead
+    # of explicitly accessing dict.keys(). On Python 2, dict.keys() returns
+    # a list copy of the keys, which may be very large.
+    for size in iter(files_by_size):
         # for large file sizes, divide them further into groups by matching
         # initial portion; how much of the file is used to match depends on
         # the file size
