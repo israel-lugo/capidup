@@ -142,7 +142,7 @@ def calculate_md5(filename, length):
 
     md5_summer = hashlib.md5()
 
-    f = open(filename, 'r')
+    f = open(filename, 'rb')
 
     try:
         bytes_read = 0
