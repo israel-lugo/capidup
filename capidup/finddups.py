@@ -253,10 +253,10 @@ def find_duplicates_in_dirs(directories):
 
     # Now, within each file size, check for duplicates.
     #
-    # We use iterkeys() to iterate the keys (file sizes), instead of
-    # keys(). keys() returns a new list of keys, which may be very large,
-    # whereas iterkeys() iterates over the dictionary's existing keys.
-    for size in files_by_size.iterkeys():
+    # We use an iterator over the dict (which gives us the keys), instead
+    # of explicitly accessing dict.keys(). On Python 2, dict.keys() returns
+    # a list copy of the keys, which may be very large.
+    for size in iter(files_by_size):
         # for large file sizes, divide them further into groups by matching
         # initial portion; how much of the file is used to match depends on
         # the file size
