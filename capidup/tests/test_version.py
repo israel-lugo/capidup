@@ -23,8 +23,6 @@
 
 import re
 
-import pytest
-
 import capidup.version
 
 # From PEP440, public version identifiers MUST comply with the following:
