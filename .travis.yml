@@ -10,8 +10,14 @@ python:
 # command to install dependencies
 install:
         - if [[ $TRAVIS_PYTHON_VERSION == '3.2' ]]; then pip install 'coverage<4.0.0'; else pip install coverage; fi
-        - pip install pytest pytest-cov
+        - pip install pytest
+        - pip install coverage pytest-cov
+        - pip install codacy-coverage
         - pip install .
 
 # command to run tests
-script: py.test capidup
+script: py.test --cov=capidup capidup
+
+after_success:
+        - coverage xml
+        - python-codacy-coverage -r coverage.xml
