@@ -5,7 +5,7 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Coverage/15155f1c5c454678923f5fb79401d151)](https://www.codacy.com/app/israel-lugo/capidup)
 [![Build Status](https://travis-ci.org/israel-lugo/capidup.svg?branch=master)](https://travis-ci.org/israel-lugo/capidup)
 
-Quickly find duplicate files in directories
+Quickly find duplicate files in directories.
 
 CapiDup recursively crawls through all the files in a list of directories and
 identifies duplicate files. Duplicate files are files with the exact same
@@ -17,21 +17,28 @@ doesn't need to compare each file to every other).
 
 CapiDup fully supports both Python 2 and Python 3.
 
+The capidup package is a library that implements the functionality and exports
+an API. There is a separate
+[capidup-cli](https://github.com/israel-lugo/capidup-cli) package that provides
+a command-line utility.
+
 ## Usage
 
 Using CapiDup is quite simple:
 
-```bash
-$ capidup /media/sdcard/DCIM ~/photos
-/media/sdcard/DCIM/DSC_1137.JPG
-/home/user/photos/Lake001.jpg
-------------------------------
-/media/sdcard/DCIM/DSC_1138.JPG
-/home/user/photos/Lake002.jpg
-------------------------------
-/home/user/photos/Woman.jpg
-/home/user/photos/portraits/Janet.jpg
-------------------------------
+```python
+>>> import capidup.finddups
+>>> duplicate_groups, errors = capidup.finddups.find_duplicates_in_dirs(
+...     ["/media/sdcard/DCIM", "/home/user/photos"]
+... )
+>>> for duplicates in duplicate_groups:
+...   print(duplicates)
+...
+['/media/sdcard/DCIM/DSC_1137.JPG', '/home/user/photos/Lake001.jpg']
+['/media/sdcard/DCIM/DSC_1138.JPG', '/home/user/photos/Lake002.jpg']
+['/home/user/photos/Woman.jpg', '/home/user/photos/portraits/Janet.jpg']
+>>> errors
+False
 ```
 
 Here we find out that /media/sdcard/DCIM/DSC_1137.JPG is a duplicate of

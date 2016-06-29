@@ -12,9 +12,6 @@ setup(
     author_email='israel.lugo@lugosys.com',
     version=__version__,
     packages=['capidup',],
-    entry_points={
-        'console_scripts': [ 'capidup=capidup.cli:main' ],
-    },
     license='License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
     long_description="""
 CapiDup recursively crawls through all the files in a list of directories and

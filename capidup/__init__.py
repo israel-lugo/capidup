@@ -31,7 +31,7 @@ and group duplicate files using a single pass on each file (that is, CapiDup
 doesn't need to compare each file to every other).
 
 The useful API is in capidup.finddups. The rest is just for internal use by
-the package or the CLI program (capidup).
+the package.
 
 """
 
