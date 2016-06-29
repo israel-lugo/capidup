@@ -74,7 +74,7 @@ same MD5 hash.
 
 The odds of this happening by accident, though, for two files of the same size,
 are really very low. For normal home use, dealing with movies, music, source
-code or other documents, this problem can be disregarded.
+code or other documents, this concern can be disregarded.
 
 ## Security
 
