@@ -67,13 +67,13 @@ there is a 1 in 2<sup>64</sup> (1:18,446,744,073,709,551,616) chance of some
 other random file being detected as its duplicate by mistake.
 
 The reason for this is that two different files may have the same hash: this is
-called a collision. CapiDup uses MD5 (which generates 128 bit hashes) for
+called a *collision*. CapiDup uses MD5 (which generates 128 bit hashes) for
 detecting whether the files are equal. It cannot distinguish between a case
 where both files are equal and a case where they just happen to generate the
 same MD5 hash.
 
-The odds of this happening by accident, though, for two files of the same size,
-are really very low. For normal home use, dealing with movies, music, source
+The odds of this happening by *accident* for two files of the same size, are,
+then, extremely low. For normal home use, dealing with movies, music, source
 code or other documents, this concern can be disregarded.
 
 ## Security
