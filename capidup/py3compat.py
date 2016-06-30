@@ -31,7 +31,7 @@ Public members:
 # Dictionary helper functions. Definitions from PEP469 (public domain)
 try:
     dict.iteritems
-except AttributeError:
+except AttributeError:  # pragma: no cover
     # Python 3
     def itervalues(d):
         """Get an iterator over the values of d."""
@@ -39,7 +39,7 @@ except AttributeError:
     def iteritems(d):
         """Get an iterator over the (key, value) items of d."""
         return iter(d.items())
-else:
+else:                   # pragma: no cover
     # Python 2
     def itervalues(d):
         """Get an iterator over the values of d."""
