@@ -38,7 +38,7 @@ Using CapiDup is quite simple:
 ['/media/sdcard/DCIM/DSC_1138.JPG', '/home/user/photos/Lake002.jpg']
 ['/home/user/photos/Woman.jpg', '/home/user/photos/portraits/Janet.jpg']
 >>> errors
-False
+[]
 ```
 
 Here we find out that /media/sdcard/DCIM/DSC_1137.JPG is a duplicate of

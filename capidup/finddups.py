@@ -87,10 +87,13 @@ def index_files_by_size(root, files_by_size):
 
     Returns True if there were any I/O errors while listing directories.
 
+    Returns a list of error messages that occurred. If empty, there were no
+    errors.
+
     """
     # encapsulate the value in a list, so we can modify it by reference
     # inside the auxiliary function
-    had_errors_wrapper = [False]
+    errors = []
 
     def _print_error(error):
         """Print a listing error to stderr.
@@ -101,9 +104,10 @@ def index_files_by_size(root, files_by_size):
         # modify the outside errors value; must be encapsulated in a list,
         # because if we assign to a variable here we just create an
         # independent local copy
-        had_errors_wrapper[0] = True
-        sys.stderr.write("error listing '%s': %s\n"
-                         % (error.filename, error.strerror))
+        msg = "error listing '%s': %s" % (error.filename, error.strerror)
+        sys.stderr.write("%s\n" % msg)
+        errors.append(msg)
+
 
 
     for curr_dir, _, filenames in os.walk(root, onerror=_print_error):
@@ -124,7 +128,7 @@ def index_files_by_size(root, files_by_size):
                     # start a new list for this file size
                     files_by_size[size] = [full_path]
 
-    return had_errors_wrapper[0]
+    return errors
 
 
 
@@ -175,10 +179,9 @@ def calculate_md5(filename, length):
 def find_duplicates(filenames, max_size):
     """Find duplicates in a list of files, comparing up to max_size bytes.
 
-    Returns a tuple of two values. The second value is a boolean indicating
-    whether any I/O errors ocurred during scanning. The first value is a
-    (possibly empty) list of lists: the names of files with at least one
-    duplicate, grouped together with their own duplicates. For example:
+    Returns a tuple of two values. The first value is a (possibly empty)
+    list of lists: the names of files with at least one duplicate, grouped
+    together with their own duplicates. For example:
 
         [
           [ "file1", "copy_of_file1", "another_copy_of_file1" ],
@@ -186,16 +189,19 @@ def find_duplicates(filenames, max_size):
           [ "file3", "a_copy_of_file3", "backup_of_file3" ]
         ]
 
+    The second value is a list of error messages that occurred. If empty,
+    there were no errors.
+
     """
-    had_errors = False
+    errors = []
 
     # shortcut: can't have duplicates if there aren't at least 2 files
     if len(filenames) < 2:
-        return [], had_errors
+        return [], errors
 
     # shortcut: if comparing 0 bytes, they're all the same
     if max_size == 0:
-        return [filenames], had_errors
+        return [filenames], errors
 
     files_by_md5 = {}
 
@@ -203,9 +209,9 @@ def find_duplicates(filenames, max_size):
         try:
             md5 = calculate_md5(filename, max_size)
         except EnvironmentError as e:
-            sys.stderr.write("unable to calculate MD5 for '%s': %s\n"
-                             % (filename, e.strerror))
-            had_errors = True
+            msg = "unable to calculate MD5 for '%s': %s" % (filename, e.strerror)
+            sys.stderr.write("%s\n" % msg)
+            errors.append(msg)
             continue
 
         if md5 not in files_by_md5:
@@ -221,7 +227,7 @@ def find_duplicates(filenames, max_size):
     # values (file lists), and that may be very large.
     duplicates = [l for l in py3compat.itervalues(files_by_md5) if len(l) >= 2]
 
-    return duplicates, had_errors
+    return duplicates, errors
 
 
 
@@ -231,10 +237,9 @@ def find_duplicates_in_dirs(directories):
 
     The files are compared by content; their name is unimportant.
 
-    Returns a tuple of two values. The second value is a boolean indicating
-    whether any I/O errors ocurred during scanning. The first value is a
-    (possibly empty) list of lists: the names of files with at least one
-    duplicate, grouped together with their own duplicates. For example:
+    Returns a tuple of two values. The first value is a (possibly empty)
+    list of lists: the names of files with at least one duplicate, grouped
+    together with their own duplicates. For example:
 
         [
           [ "file1", "copy_of_file1", "another_copy_of_file1" ],
@@ -242,14 +247,17 @@ def find_duplicates_in_dirs(directories):
           [ "file3", "a_copy_of_file3", "backup_of_file3" ]
         ]
 
+    The second value is a list of error messages that occurred. If empty,
+    there were no errors.
+
     """
-    errors_in_total = False
+    errors_in_total = []
     files_by_size = {}
 
     # First, group all files by size
     for directory in directories:
-        had_errors = index_files_by_size(directory, files_by_size)
-        errors_in_total = errors_in_total or had_errors
+        sub_errors = index_files_by_size(directory, files_by_size)
+        errors_in_total += sub_errors
 
     all_duplicates = []
 
@@ -267,8 +275,8 @@ def find_duplicates_in_dirs(directories):
                                                 PARTIAL_MD5_READ_MULT),
                                PARTIAL_MD5_MAX_READ)
 
-            possible_duplicates_list, had_errors = find_duplicates(files_by_size[size], partial_size)
-            errors_in_total = errors_in_total or had_errors
+            possible_duplicates_list, sub_errors = find_duplicates(files_by_size[size], partial_size)
+            errors_in_total += sub_errors
         else:
             # small file size, group them all together and do full MD5s
             possible_duplicates_list = [files_by_size[size]]
@@ -281,9 +289,9 @@ def find_duplicates_in_dirs(directories):
         # when we indexed. Would be better to somehow tell calculate_md5 to
         # scan until EOF (e.g. give it a negative size).
         for possible_duplicates in possible_duplicates_list:
-            duplicates, had_errors = find_duplicates(possible_duplicates, size)
+            duplicates, sub_errors = find_duplicates(possible_duplicates, size)
             all_duplicates += duplicates
-            errors_in_total = errors_in_total or had_errors
+            errors_in_total += sub_errors
 
     return all_duplicates, errors_in_total
 
