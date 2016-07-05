@@ -179,18 +179,24 @@ def calculate_md5(filename, length):
 def find_duplicates(filenames, max_size):
     """Find duplicates in a list of files, comparing up to max_size bytes.
 
-    Returns a tuple of two values. The first value is a (possibly empty)
-    list of lists: the names of files with at least one duplicate, grouped
-    together with their own duplicates. For example:
+    Returns a 2-tuple of two values: (duplicate_groups, errors).
 
-        [
-          [ "file1", "copy_of_file1", "another_copy_of_file1" ],
-          [ "file2", "this_is_a_copy_of_file2" ],
-          [ "file3", "a_copy_of_file3", "backup_of_file3" ]
-        ]
+    duplicate_groups is a (possibly empty) list of lists: the names of
+    files that have at least two copies, grouped together.
 
-    The second value is a list of error messages that occurred. If empty,
-    there were no errors.
+    errors is a list of error messages that occurred. If empty, there were
+    no errors.
+
+    For example, assuming a1 and a2 are identical, c1 and c2 are identical,
+    and b is different from all others:
+
+      >>> dups, errs = find_duplicates(['a1', 'a2', 'b', 'c1', 'c2'], 1024)
+      >>> dups
+      [['a1', 'a2'], ['c1', 'c2']]
+      >>> errors
+      []
+
+    Note that b is not included in the results, as it has no duplicates.
 
     """
     errors = []
@@ -237,18 +243,22 @@ def find_duplicates_in_dirs(directories):
 
     The files are compared by content; their name is unimportant.
 
-    Returns a tuple of two values. The first value is a (possibly empty)
-    list of lists: the names of files with at least one duplicate, grouped
-    together with their own duplicates. For example:
+    Returns a 2-tuple of two values: (duplicate_groups, errors).
 
-        [
-          [ "file1", "copy_of_file1", "another_copy_of_file1" ],
-          [ "file2", "this_is_a_copy_of_file2" ],
-          [ "file3", "a_copy_of_file3", "backup_of_file3" ]
-        ]
+    duplicate_groups is a (possibly empty) list of lists: the names of
+    files that have at least two copies, grouped together.
 
-    The second value is a list of error messages that occurred. If empty,
-    there were no errors.
+    errors is a list of error messages that occurred. If empty, there were
+    no errors.
+
+    For example, assuming ./x/a1 and ./x/a2 are identical, ./x/c1 and
+    ./y/c2 are identical, and ./b is different from all others:
+
+      >>> dups, errs = find_duplicates(['.']
+      >>> dups
+      [['./x/a1', './x/a2'], ['./x/c1', '/./y/c2']]
+      >>> errors
+      []
 
     """
     errors_in_total = []
