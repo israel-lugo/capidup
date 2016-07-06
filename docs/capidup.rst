@@ -30,13 +30,13 @@ Public functions
    Returns a 2-tuple of two values: ``(duplicate_groups, errors)``.
 
    `duplicate_groups` is a (possibly empty) list of lists: the names of
-    files that have at least two copies, grouped together.
+   files that have at least two copies, grouped together.
 
    `errors` is a list of error messages that occurred. If empty, there were
    no errors.
 
-   For example, assuming `a1` and `a2` are identical, `c1` and `c2` are
-   identical, and `b` is different from all others::
+   For example, assuming ``a1`` and ``a2`` are identical, ``c1`` and ``c2`` are
+   identical, and ``b`` is different from all others::
 
      >>> dups, errs = find_duplicates(['a1', 'a2', 'b', 'c1', 'c2'], 1024)
      >>> dups
@@ -44,7 +44,7 @@ Public functions
      >>> errors
      []
 
-    Note that `b` is not included in the results, as it has no duplicates.
+   Note that `b` is not included in the results, as it has no duplicates.
 
 
 .. function:: capidup.finddups.find_duplicates_in_dirs(directories)
@@ -59,12 +59,12 @@ Public functions
    `errors` is a list of error messages that occurred. If empty, there were no
    errors.
 
-   For example, assuming `./x/a1` and `./x/a2` are identical, `./x/c1` and
-   `./y/c2` are identical, and ./b is different from all others:
+   For example, assuming ``./a1`` and ``dir1/a2`` are identical, ``dir1/c1`` and
+   ``dir2/c2`` are identical, and ``dir2/b`` is different from all others:
 
-     >>> dups, errs = find_duplicates(['.']
+     >>> dups, errs = find_duplicates(['.', 'dir1', 'dir2'])
      >>> dups
-     [['./x/a1', './x/a2'], ['./x/c1', '/./y/c2']]
+     [['./a1', 'dir1/a2'], ['dir1/c1', 'dir2/c2']]
      >>> errors
      []
 
@@ -84,8 +84,8 @@ Public data members
    
    Multiple (in bytes) for the partial read size.
 
-   GNU/Linux seems to do faster when reading multiples of page size
-   (usually 4096 on x86).
+.. tip:: GNU/Linux should be faster when reading multiples of page size
+   (usually 4096 bytes on x86).
 
 .. data:: capidup.finddups.PARTIAL_MD5_READ_RATIO
 
