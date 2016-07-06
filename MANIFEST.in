@@ -1,0 +1,7 @@
+include *.txt
+include *.rst
+include *.md
+recursive-include docs *
+recursive-include tests *
+recursive-exclude tests *.pyc
+recursive-exclude tests *.pyo
