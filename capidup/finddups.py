@@ -20,7 +20,7 @@
 # For suggestions, feedback or bug reports: israel.lugo@lugosys.com
 
 
-"""Quickly find duplicate files in directories.
+"""This module implements the CapiDup public API.
 
 Public functions:
 
@@ -50,24 +50,27 @@ __all__ = [ "find_duplicates", "find_duplicates_in_dirs", "MD5_CHUNK_SIZE",
         "PARTIAL_MD5_MAX_READ", "PARTIAL_MD5_READ_RATIO" ]
 
 
-# Chunk size in bytes, for reading file while calculating MD5
 MD5_CHUNK_SIZE = 512 * 1024
+"""Chunk size in bytes, when reading from file to calculate MD5."""
 
-# Multiple (in bytes) for the partial read size (4096, the usual page
-# size for x86 on GNU/Linux and Windows, seems a good choice: GNU/Linux
-# seems to do faster when reading multiples of page size)
 PARTIAL_MD5_READ_MULT = 4 * 1024
+"""Divisor of the partial read size, in bytes.
 
-# Minimum file size, in bytes, above which we do a partial comparison before
-# trying the full thing
+When hashing a portion of a file for comparison, the size of that portion
+will be a multiple of this value.
+
+.. tip:: A good choice on GNU/Linux would be multiples of page size
+         (usually 4096 bytes on x86).
+"""
+
 PARTIAL_MD5_THRESHOLD = 2 * PARTIAL_MD5_READ_MULT
+"""Above this file size in bytes, we do a partial comparison first."""
 
-# Maximum size of the partial read, in bytes
 PARTIAL_MD5_MAX_READ = 16 * PARTIAL_MD5_READ_MULT
+"""Maximum size of the partial read, in bytes."""
 
-# How much of the file to read in a partial read (divider applied to the
-# file's size). Up to PARTIAL_MD5_MAX_READ
 PARTIAL_MD5_READ_RATIO = 4
+"""Partial reads of 1/n of the file size (below `PARTIAL_MD5_MAX_READ`)."""
 
 
 
@@ -177,20 +180,26 @@ def calculate_md5(filename, length):
 
 
 def find_duplicates(filenames, max_size):
-    """Find duplicates in a list of files, comparing up to max_size bytes.
+    """Find duplicates in a list of files, comparing up to `max_size` bytes.
 
-    Returns a tuple of two values. The first value is a (possibly empty)
-    list of lists: the names of files with at least one duplicate, grouped
-    together with their own duplicates. For example:
+    Returns a 2-tuple of two values: ``(duplicate_groups, errors)``.
 
-        [
-          [ "file1", "copy_of_file1", "another_copy_of_file1" ],
-          [ "file2", "this_is_a_copy_of_file2" ],
-          [ "file3", "a_copy_of_file3", "backup_of_file3" ]
-        ]
+    `duplicate_groups` is a (possibly empty) list of lists: the names of
+    files that have at least two copies, grouped together.
 
-    The second value is a list of error messages that occurred. If empty,
-    there were no errors.
+    `errors` is a list of error messages that occurred. If empty, there were
+    no errors.
+
+    For example, assuming ``a1`` and ``a2`` are identical, ``c1`` and ``c2`` are
+    identical, and ``b`` is different from all others::
+
+      >>> dups, errs = find_duplicates(['a1', 'a2', 'b', 'c1', 'c2'], 1024)
+      >>> dups
+      [['a1', 'a2'], ['c1', 'c2']]
+      >>> errors
+      []
+
+    Note that `b` is not included in the results, as it has no duplicates.
 
     """
     errors = []
@@ -235,20 +244,22 @@ def find_duplicates(filenames, max_size):
 def find_duplicates_in_dirs(directories):
     """Recursively scan a list of directories, looking for duplicate files.
 
-    The files are compared by content; their name is unimportant.
+    Returns a 2-tuple of two values: ``(duplicate_groups, errors)``.
 
-    Returns a tuple of two values. The first value is a (possibly empty)
-    list of lists: the names of files with at least one duplicate, grouped
-    together with their own duplicates. For example:
+    `duplicate_groups` is a (possibly empty) list of lists: the names of files
+    that have at least two copies, grouped together.
 
-        [
-          [ "file1", "copy_of_file1", "another_copy_of_file1" ],
-          [ "file2", "this_is_a_copy_of_file2" ],
-          [ "file3", "a_copy_of_file3", "backup_of_file3" ]
-        ]
+    `errors` is a list of error messages that occurred. If empty, there were no
+    errors.
 
-    The second value is a list of error messages that occurred. If empty,
-    there were no errors.
+    For example, assuming ``./a1`` and ``dir1/a2`` are identical, ``dir1/c1`` and
+    ``dir2/c2`` are identical, and ``dir2/b`` is different from all others:
+
+      >>> dups, errs = find_duplicates(['.', 'dir1', 'dir2'])
+      >>> dups
+      [['./a1', 'dir1/a2'], ['dir1/c1', 'dir2/c2']]
+      >>> errors
+      []
 
     """
     errors_in_total = []
