@@ -5,6 +5,10 @@ from setuptools import setup
 
 from capidup.version import __version__
 
+def read_file(path):
+    with open(path, 'r') as f:
+        return f.read()
+
 setup(
     name='capidup',
     description='Quickly find duplicate files in directories',
@@ -30,14 +34,5 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: System :: Filesystems',
     ],
-    long_description="""
-CapiDup recursively crawls through all the files in a list of directories and
-identifies duplicate files. Duplicate files are files with the exact same
-content, regardless of their name, location or timestamp.
-
-This program is designed to be quite fast. It uses a smart algorithm to detect
-and group duplicate files using a single pass on each file (that is, CapiDup
-doesn't need to compare each file to every other).
-
-"""
+    long_description=read_file('README.rst'),
 )
