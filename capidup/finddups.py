@@ -199,7 +199,7 @@ def find_duplicates(filenames, max_size):
       >>> errors
       []
 
-    Note that `b` is not included in the results, as it has no duplicates.
+    Note that ``b`` is not included in the results, as it has no duplicates.
 
     """
     errors = []
