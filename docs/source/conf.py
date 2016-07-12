@@ -63,7 +63,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'CapiDup'
-copyright = u'2016, Israel G. Lugo'
+copyright = u'2010,2014,2016, Israel G. Lugo'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -285,7 +285,7 @@ texinfo_documents = [
 epub_title = u'CapiDup'
 epub_author = u'Israel G. Lugo'
 epub_publisher = u'Israel G. Lugo'
-epub_copyright = u'2016, Israel G. Lugo'
+epub_copyright = copyright
 
 # The basename for the epub file. It defaults to the project name.
 #epub_basename = u'CapiDup'
