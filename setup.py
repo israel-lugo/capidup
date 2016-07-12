@@ -6,6 +6,8 @@ from setuptools import setup
 from capidup.version import __version__
 
 def read_file(path):
+    """Read a file and return its entire contents."""
+
     with open(path, 'r') as f:
         return f.read()
 
