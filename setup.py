@@ -19,7 +19,7 @@ setup(
     url='https://github.com/israel-lugo/capidup',
     version=__version__,
     packages=['capidup',],
-    license='License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
+    license='GPLv3+',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
