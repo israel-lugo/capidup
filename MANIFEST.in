@@ -1,7 +1,8 @@
 include *.txt
 include *.rst
 include *.md
+include test.sh
 recursive-include docs *
-recursive-include tests *
-recursive-exclude tests *.pyc
-recursive-exclude tests *.pyo
+recursive-include capidup/tests *
+recursive-exclude capidup/tests *.pyc
+recursive-exclude capidup/tests *.pyo
