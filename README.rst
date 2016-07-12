@@ -1,9 +1,7 @@
-# CapiDup
+CapiDup
+=======
 
-[![license](https://img.shields.io/badge/license-GPLv3+-blue.svg)](LICENSE)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/15155f1c5c454678923f5fb79401d151)](https://www.codacy.com/app/israel-lugo/capidup)
-[![Codacy Badge](https://api.codacy.com/project/badge/Coverage/15155f1c5c454678923f5fb79401d151)](https://www.codacy.com/app/israel-lugo/capidup)
-[![Build Status](https://travis-ci.org/israel-lugo/capidup.svg?branch=master)](https://travis-ci.org/israel-lugo/capidup)
+|license| |Codacy Badge| |Codacy Coverage| |Build Status|
 
 Quickly find duplicate files in directories.
 
@@ -18,52 +16,54 @@ doesn't need to compare each file to every other).
 CapiDup fully supports both Python 2 and Python 3.
 
 The capidup package is a library that implements the functionality and exports
-an API. There is a separate
-[capidup-cli](https://github.com/israel-lugo/capidup-cli) package that provides
-a command-line utility.
+an API. There is a separate capidup-cli_ package that provides a command-line
+utility.
 
-## Usage
+Usage
+-----
 
 Using CapiDup is quite simple:
 
-```python
->>> import capidup.finddups
->>> duplicate_groups, errors = capidup.finddups.find_duplicates_in_dirs(
-...     ["/media/sdcard/DCIM", "/home/user/photos"]
-... )
->>> for duplicates in duplicate_groups:
-...   print(duplicates)
-...
-['/media/sdcard/DCIM/DSC_1137.JPG', '/home/user/photos/Lake001.jpg']
-['/media/sdcard/DCIM/DSC_1138.JPG', '/home/user/photos/Lake002.jpg']
-['/home/user/photos/Woman.jpg', '/home/user/photos/portraits/Janet.jpg']
->>> errors
-[]
-```
+.. code:: python
 
-Here we find out that /media/sdcard/DCIM/DSC_1137.JPG is a duplicate of
-~/photos/Lake001.jpg, DSC_1138.JPG is a duplicate of Lake002.jpg, and
+    >>> import capidup.finddups
+    >>> duplicate_groups, errors = capidup.finddups.find_duplicates_in_dirs(
+    ...     ["/media/sdcard/DCIM", "/home/user/photos"]
+    ... )
+    >>> for duplicates in duplicate_groups:
+    ...   print(duplicates)
+    ...
+    ['/media/sdcard/DCIM/DSC_1137.JPG', '/home/user/photos/Lake001.jpg']
+    ['/media/sdcard/DCIM/DSC_1138.JPG', '/home/user/photos/Lake002.jpg']
+    ['/home/user/photos/Woman.jpg', '/home/user/photos/portraits/Janet.jpg']
+    >>> errors
+    []
+
+Here we find out that /media/sdcard/DCIM/DSC\_1137.JPG is a duplicate of
+~/photos/Lake001.jpg, DSC\_1138.JPG is a duplicate of Lake002.jpg, and
 ~/photos/Woman.jpg is a duplicate of photos/portraits/Janet.jpg.
 
-## Algorithm
+Algorithm
+---------
 
 CapiDup crawls the directories and gathers the list of files. Then, it takes a
 3-step approach:
 
- 1. Files are grouped by size (files of different size must obviously be
-    different).
- 
- 1. Within files of the same size, they are further grouped by the MD5 of the
-    first few KBytes. Naturally, if the first few KB are different, the files
-    are different.
- 
- 1. Within files with the same initial MD5, they are finally grouped by the MD5
-    of the entire file. Files with the same MD5 are considered duplicates.
+1. Files are grouped by size (files of different size must obviously be
+   different).
 
-## Considerations
+2. Within files of the same size, they are further grouped by the MD5 of the
+   first few KBytes. Naturally, if the first few KB are different, the files
+   are different.
+
+3. Within files with the same initial MD5, they are finally grouped by the MD5
+   of the entire file. Files with the same MD5 are considered duplicates.
+
+Considerations
+--------------
 
 There is a *very small* possibility of false positives. For any given file,
-there is a 1 in 2<sup>64</sup> (1:18,446,744,073,709,551,616) chance of some
+there is a 1 in 2\ :sup:`64` (1:18,446,744,073,709,551,616) chance of some
 other random file being detected as its duplicate by mistake.
 
 The reason for this is that two different files may have the same hash: this is
@@ -76,7 +76,8 @@ The odds of this happening by *accident* for two files of the same size, are,
 then, extremely low. For normal home use, dealing with movies, music, source
 code or other documents, this concern can be disregarded.
 
-## Security
+Security
+--------
 
 There is one case when care should be taken: when comparing files which might
 have been intentionally manipulated by a malicious attacker.
@@ -92,7 +93,8 @@ manipulate the rest of the file in such a way that it still has the same MD5 as
 the original. Comparing the two files, CapiDup would show them as duplicates
 when they are not.
 
-## Future plans
+Future plans
+------------
 
 Future plans for CapiDup include having a configurable option to use a
 different hashing algorithm, such as SHA1 which has a larger hash size of 160
@@ -107,3 +109,12 @@ would check files with two different hashing algorithms. The tradeoff in speed
 would not be worthwhile for any normal use case, but the possibility could be
 there.
 
+.. |license| image:: https://img.shields.io/badge/license-GPLv3+-blue.svg
+   :target: LICENSE
+.. |Codacy Badge| image:: https://api.codacy.com/project/badge/Grade/15155f1c5c454678923f5fb79401d151
+   :target: https://www.codacy.com/app/israel-lugo/capidup
+.. |Codacy Coverage| image:: https://api.codacy.com/project/badge/Coverage/15155f1c5c454678923f5fb79401d151
+   :target: https://www.codacy.com/app/israel-lugo/capidup
+.. |Build Status| image:: https://travis-ci.org/israel-lugo/capidup.svg?branch=master
+   :target: https://travis-ci.org/israel-lugo/capidup
+.. _capidup-cli: https://github.com/israel-lugo/capidup-cli
