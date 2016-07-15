@@ -1,7 +1,7 @@
 CapiDup
 =======
 
-|license| |Codacy Badge| |Codacy Coverage| |Build Status|
+|license| |PyPi version| |PyPi pyversion| |Codacy Badge| |Codacy Coverage| |Build Status|
 
 Quickly find duplicate files in directories.
 
@@ -109,8 +109,11 @@ would check files with two different hashing algorithms. The tradeoff in speed
 would not be worthwhile for any normal use case, but the possibility could be
 there.
 
-.. |license| image:: https://img.shields.io/badge/license-GPLv3+-blue.svg
+.. |license| image:: https://img.shields.io/badge/license-GPLv3+-blue.svg?maxAge=2592000
    :target: LICENSE
+.. |PyPi version| image:: https://img.shields.io/pypi/v/capidup.svg
+   :target: https://pypi.python.org/pypi/capidup
+.. |PyPi pyversion| image:: https://img.shields.io/pypi/pyversions/capidup.svg?maxAge=86400
 .. |Codacy Badge| image:: https://api.codacy.com/project/badge/Grade/15155f1c5c454678923f5fb79401d151
    :target: https://www.codacy.com/app/israel-lugo/capidup
 .. |Codacy Coverage| image:: https://api.codacy.com/project/badge/Coverage/15155f1c5c454678923f5fb79401d151
