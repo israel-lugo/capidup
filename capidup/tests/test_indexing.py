@@ -21,8 +21,6 @@
 
 """White box file indexing testing."""
 
-import os
-import pytest
 
 import capidup.finddups as finddups
 
