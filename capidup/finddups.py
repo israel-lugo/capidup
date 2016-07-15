@@ -118,7 +118,13 @@ def index_files_by_size(root, files_by_size):
         for base_filename in filenames:
             full_path = os.path.join(curr_dir, base_filename)
 
-            file_info = os.lstat(full_path)
+            # avoid race condition: file can be deleted between os.walk()
+            # seeing it and us calling os.lstat()
+            try:
+                file_info = os.lstat(full_path)
+            except OSError as e:
+                _print_error(e)
+                continue
 
             # only want regular files, not symlinks
             if stat.S_ISREG(file_info.st_mode):

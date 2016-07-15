@@ -27,8 +27,6 @@ import pytest
 import capidup.finddups as finddups
 
 
-# Issue #12 is not fixed yet; expected to fail
-@pytest.mark.xfail(raises=OSError)
 def test_nonexistent(tmpdir, monkeypatch):
     """Test indexing a nonexistent directory tree.
 
@@ -37,8 +35,10 @@ def test_nonexistent(tmpdir, monkeypatch):
     try to os.lstat() it, the file is no longer there. See issue #12 for
     more details.
 
-    Uses a tmpdir fixture to make sure the directory tree is empty, so the
-    tested files really don't exist.
+    Uses a monkeypatch fixture to patch capidup's os module, to use a fake
+    os.walk() that provides fictitious filenames. Uses a tmpdir fixture to
+    make sure the directory tree is empty, so the tested files really don't
+    exist.
 
     """
     def fake_walk(top, topdown=True, onerror=None, followlinks=False):
