@@ -17,10 +17,13 @@ Fixed
   See `issue #12`_.
 
 
-1.0.1 — 2016-07-12
---------------------
+1.0.1_ — 2016-07-12
+-------------------
+
 
 First production release.
 
 
 .. _issue #12: https://github.com/israel-lugo/capidup/issues/12
+
+.. _1.0.1: https://github.com/israel-lugo/capidup/tree/v1.0.1
