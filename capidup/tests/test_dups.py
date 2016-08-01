@@ -38,7 +38,7 @@ try:
 except NameError:
     def u(s):
         """Return s as-is.
-        
+
         This is a transparent wrapper for declaring Unicode strings without
         the u"" prefix in a Python version-independent way.
 
