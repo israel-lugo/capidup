@@ -71,6 +71,21 @@ index_errors_data = range(4)
 read_errors_data = [0, 2, 3, 4]
 
 
+weird_filenames = [
+    u"arch\N{LATIN SMALL LETTER AE}logy",
+    u"c\N{LATIN SMALL LETTER A WITH TILDE}o",
+    u"15\N{EURO SIGN}",
+    u"\N{MICRO SIGN}s",
+    u"Stra\N{LATIN SMALL LETTER SHARP S}e",
+    u"\N{LATIN SMALL LETTER O WITH STROKE}",
+    u"s\N{LATIN SMALL LETTER O WITH STROKE}ster",
+    u"\N{CYRILLIC SMALL LETTER YA} \N{CYRILLIC SMALL LETTER TE}\N{CYRILLIC SMALL LETTER IE}\N{CYRILLIC SMALL LETTER BE}\N{CYRILLIC SMALL LETTER IE} \N{CYRILLIC SMALL LETTER KA}\N{CYRILLIC SMALL LETTER O}\N{CYRILLIC SMALL LETTER HA}\N{CYRILLIC SMALL LETTER A}\N{CYRILLIC SMALL LETTER YU}",
+    u"tabs\tare\tus",
+    u"\N{CJK UNIFIED IDEOGRAPH-4F60}\N{CJK UNIFIED IDEOGRAPH-597D}",
+]
+
+
+
 def test_empty_dir(tmpdir):
     """Test that empty dirs work and produce no duplicates."""
 
@@ -78,6 +93,28 @@ def test_empty_dir(tmpdir):
 
     assert not errors
     assert len(dups) == 0
+
+
+@pytest.mark.parametrize("filename", weird_filenames)
+def test_weird_filenames(tmpdir, filename):
+    """Test that weird filenames don't cause breakage."""
+
+    othername = 'x' if filename != 'x' else 'xx'
+
+    # create the weird filenames
+    f1 = tmpdir.join(filename)
+    f1.write("a")
+    f2 = tmpdir.join(othername)
+    f2.write("a")
+
+    dups, errors = finddups.find_duplicates_in_dirs([str(tmpdir)])
+
+    assert not errors
+    assert len(dups) == 1
+    assert len(dups[0]) == 2
+    # We don't check if the filenames match; that may lead to issues since
+    # we'd have to decode for comparison (the test would introduce problems
+    # that the original program doesn't have).
 
 
 def setup_flat_files(tmpdir, file_groups):
