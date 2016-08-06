@@ -10,6 +10,12 @@ Unreleased__
 ------------
 __ https://github.com/israel-lugo/capidup/compare/v1.0.1...HEAD
 
+Changed
+.......
+
+- Implement unit tests for indexing files with non-ASCII filenames, to make
+  sure it works. See `issue #9`_.
+
 Fixed
 .....
 
@@ -24,6 +30,7 @@ Fixed
 First production release.
 
 
+.. _issue #9: https://github.com/israel-lugo/capidup/issues/9
 .. _issue #12: https://github.com/israel-lugo/capidup/issues/12
 
 .. _1.0.1: https://github.com/israel-lugo/capidup/tree/v1.0.1
