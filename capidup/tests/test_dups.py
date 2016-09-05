@@ -30,9 +30,10 @@ import capidup.finddups as finddups
 
 
 # Python3.2 doesn't support u"" string literals (3.3 and onward do, for
-# backwards compatibility). To support 3.2, we must use native literals
-# (byte str on Python 2), and use a transparent wrapper to decode them on
-# Python 2.
+# backwards compatibility). To support 3.2, we must avoid u"". We use
+# native literals (byte str on Python 2, str on Python 3), and use a
+# transparent wrapper to decode them on Python 2. We rely on the source
+# file being encoded in UTF-8.
 try:
     unicode
 except NameError:
