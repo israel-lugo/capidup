@@ -64,7 +64,7 @@ weird_filenames = [
 
 
 
-# Array of data for test_flat_find_dups_in_dirs. Each item is a tuple of
+# Array of data for test_find_dups_in_dirs. Each item is a tuple of
 # tuples: file contents, grouped by those which are equal.
 testdata = [
     (   # 1 group of 2 duplicate files
@@ -140,11 +140,13 @@ def test_weird_filenames(tmpdir, filename):
     # that the original program doesn't have).
 
 
-def setup_flat_files(tmpdir, file_groups):
+def setup_files(tmpdir, file_groups, flat):
     """Create a flat file structure for testing.
 
     Receives a tmpdir fixture, and the file content to write in the
-    directory. See test_flat_find_dups_in_dirs doc for details.
+    directory. If flat is True, all files are created in the same
+    directory; otherwise, they are created in subdirectories. See
+    test_find_dups_in_dirs doc for details.
 
     Returns a list of groups of filenames, equal amongst themselves.
 
@@ -155,9 +157,18 @@ def setup_flat_files(tmpdir, file_groups):
 
         # create the files in this group of duplicates
         for file_num, file_content in enumerate(file_group):
-            basename = "g%d_file%d" % (group_num, file_num)
+            if flat:
+                basename = "g%d_file%d" % (group_num, file_num)
 
-            f = tmpdir.join(basename)
+                f = tmpdir.join(basename)
+            else:
+                # create directories of files from different groups
+                subdir = tmpdir.join("file%d" % file_num)
+                if not subdir.check(dir=True):
+                    subdir.mkdir()
+
+                f = subdir.join("g%d" % group_num)
+
             f.write(file_content)
 
             names.append(str(f))
@@ -223,13 +234,15 @@ def setup_flat_read_errors(tmpdir, count):
 @pytest.mark.parametrize("file_groups", testdata)
 @pytest.mark.parametrize("num_index_errors", index_errors_data)
 @pytest.mark.parametrize("num_read_errors", read_errors_data)
-def test_flat_find_dups_in_dirs(tmpdir, file_groups, num_index_errors,
-                                num_read_errors):
-    """Test multiple files in the same directory.
+@pytest.mark.parametrize("flat", [True, False])
+def test_find_dups_in_dirs(tmpdir, file_groups, num_index_errors,
+                           num_read_errors, flat):
+    """Test find_duplicates_in_dirs with multiple files.
 
-    Receives a tmpdir fixture, the file content to write in the directory,
+    Receives a tmpdir fixture, the file content to write within it,
     the number of unreadable directories to create, and the number of
-    unreadable files to create.
+    unreadable files to create. If flat is True, all files are created
+    directly in tmpdir. Otherwise, they are distributed by subdirs.
 
     The file content should be a tuple of tuples: file contents, grouped by
     those which are equal. Example:
@@ -238,7 +251,7 @@ def test_flat_find_dups_in_dirs(tmpdir, file_groups, num_index_errors,
 
     """
     # create file contents for duplicate testing
-    name_groups = setup_flat_files(tmpdir, file_groups)
+    name_groups = setup_files(tmpdir, file_groups, flat)
     # discard groups with only one file (unique files are not duplicates)
     expected_dup_groups = [names for names in name_groups if len(names) > 1]
 
