@@ -41,6 +41,7 @@ import sys
 import os
 import stat
 import hashlib
+import fnmatch
 
 from capidup import py3compat
 
@@ -80,6 +81,19 @@ def round_up_to_mult(n, mult):
     return ((n + mult - 1) // mult) * mult
 
 
+def should_be_excluded(subdir, exclude_dirs):
+    """Check if a subdir should be excluded.
+
+    Returns True if subdir matches at least one of the exclude patterns in
+    the exclude_dirs list.
+
+    """
+    for pattern in exclude_dirs:
+        if fnmatch.fnmatch(subdir, pattern):
+            return True
+    return False
+
+
 def prune_subdirs(subdirs, cur_dir, exclude_dirs):
     """Prune subdirs from an index crawl.
 
@@ -93,8 +107,7 @@ def prune_subdirs(subdirs, cur_dir, exclude_dirs):
     Returns a new (possibly pruned) subdirs list.
 
     """
-    # FIXME: Implement this. Use fnmatch or so.
-    return subdirs
+    return [d for d in subdirs if not should_be_excluded(d, exclude_dirs)]
 
 
 def index_files_by_size(root, files_by_size, exclude_dirs):
@@ -135,7 +148,8 @@ def index_files_by_size(root, files_by_size, exclude_dirs):
 
     for curr_dir, subdirs, filenames in os.walk(root, topdown=True, onerror=_print_error):
 
-        subdirs = prune_subdirs(subdirs, curr_dir, exclude_dirs)
+        # modify subdirs in-place to influence os.walk
+        subdirs[:] = prune_subdirs(subdirs, curr_dir, exclude_dirs)
 
         for base_filename in filenames:
             full_path = os.path.join(curr_dir, base_filename)

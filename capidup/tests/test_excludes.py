@@ -41,21 +41,21 @@ exclude_dirs_data = [
     # no subdirs, exclude pattern doesn't break
     ([], ["a"], []),
     # basic exclude one directory
-    pytest.mark.xfail((["a", "b", "c"], ["a"], ["b", "c"])),
+    (["a", "b", "c"], ["a"], ["b", "c"]),
     # exclude character range
-    pytest.mark.xfail((["a", "b", "c"], ["[ab]"], ["c"])),
+    (["a", "b", "c"], ["[ab]"], ["c"]),
     # exclude negative range
-    pytest.mark.xfail((["a", "b", "c", "xx"], ["[!ac]"], ["a", "c", "xx"])),
+    (["a", "b", "c", "xx"], ["[!ac]"], ["a", "c", "xx"]),
     # two exclude patterns
-    pytest.mark.xfail((["a", "b", "c"], ["a", "b"], ["c"])),
+    (["a", "b", "c"], ["a", "b"], ["c"]),
     # pattern only excludes full matches
-    pytest.mark.xfail((["a", "b", "aa", "bb", "xx"], ["[ab]"], ["aa", "bb", "xx"])),
+    (["a", "b", "aa", "bb", "xx"], ["[ab]"], ["aa", "bb", "xx"]),
     # * with range prefix
-    pytest.mark.xfail((["a", "b", "aa", "bb", "xx"], ["[ab]*"], ["xx"])),
+    (["a", "b", "aa", "bb", "xx"], ["[ab]*"], ["xx"]),
     # * excludes everything
-    pytest.mark.xfail((["a", "b", "aa", "bb", "xx"], ["*"], [])),
+    (["a", "b", "aa", "bb", "xx"], ["*"], []),
     # ? matches any character
-    pytest.mark.xfail((["a", "b", "xy", "xz"], ["x?"], ["a", "b"])),
+    (["a", "b", "xy", "xz"], ["x?"], ["a", "b"]),
 ]
 
 
