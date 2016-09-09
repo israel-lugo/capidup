@@ -41,6 +41,7 @@ import sys
 import os
 import stat
 import hashlib
+import fnmatch
 
 from capidup import py3compat
 
@@ -80,13 +81,43 @@ def round_up_to_mult(n, mult):
     return ((n + mult - 1) // mult) * mult
 
 
+def should_be_excluded(subdir, exclude_dirs):
+    """Check if a subdir should be excluded.
 
-def index_files_by_size(root, files_by_size):
+    Returns True if subdir matches at least one of the exclude patterns in
+    the exclude_dirs list.
+
+    """
+    for pattern in exclude_dirs:
+        if fnmatch.fnmatch(subdir, pattern):
+            return True
+    return False
+
+
+def prune_subdirs(subdirs, cur_dir, exclude_dirs):
+    """Prune subdirs from an index crawl.
+
+    This is used to control the search performed by os.walk() in
+    index_files_by_size().
+
+    cur_dir is the path of the current directory. subdirs is the list of
+    subdirectories in the current directory, to be pruned as per the
+    exclude_dirs list.
+
+    Returns a new (possibly pruned) subdirs list.
+
+    """
+    return [d for d in subdirs if not should_be_excluded(d, exclude_dirs)]
+
+
+def index_files_by_size(root, files_by_size, exclude_dirs):
     """Recursively index files under a root directory.
 
     Each regular file is added *in-place* to the files_by_size dictionary,
     according to the file size. This is a (possibly empty) dictionary of
     lists of filenames, indexed by file size.
+
+    exclude_dirs is a list of directory names that should be excluded.
 
     Returns True if there were any I/O errors while listing directories.
 
@@ -112,8 +143,13 @@ def index_files_by_size(root, files_by_size):
         errors.append(msg)
 
 
+    # XXX: The actual root may be matched by the exclude pattern. Should we
+    # prune it as well?
 
-    for curr_dir, _, filenames in os.walk(root, onerror=_print_error):
+    for curr_dir, subdirs, filenames in os.walk(root, topdown=True, onerror=_print_error):
+
+        # modify subdirs in-place to influence os.walk
+        subdirs[:] = prune_subdirs(subdirs, curr_dir, exclude_dirs)
 
         for base_filename in filenames:
             full_path = os.path.join(curr_dir, base_filename)
@@ -247,8 +283,12 @@ def find_duplicates(filenames, max_size):
 
 
 
-def find_duplicates_in_dirs(directories):
+def find_duplicates_in_dirs(directories, exclude_dirs=[]):
     """Recursively scan a list of directories, looking for duplicate files.
+
+    `exclude_dirs`, if provided, should be a list of shell patterns.
+    Subdirectories whose names match these patterns are excluded from the
+    scan.
 
     Returns a 2-tuple of two values: ``(duplicate_groups, errors)``.
 
@@ -259,10 +299,11 @@ def find_duplicates_in_dirs(directories):
     errors.
 
     For example, assuming ``./a1`` and ``/dir1/a2`` are identical,
-    ``/dir1/c1`` and ``/dir2/c2`` are identical, and ``/dir2/b`` is
-    different from all others:
+    ``/dir1/c1`` and ``/dir2/c2`` are identical, ``/dir2/b`` is different
+    from all others, and that any subdirectories called ``backup`` should
+    not be scanned:
 
-      >>> dups, errs = find_duplicates_in_dirs(['.', '/dir1', '/dir2'])
+      >>> dups, errs = find_duplicates_in_dirs(['.', '/dir1', '/dir2'], ['backup'])
       >>> dups
       [['./a1', '/dir1/a2'], ['/dir1/c1', '/dir2/c2']]
       >>> errors
@@ -274,7 +315,7 @@ def find_duplicates_in_dirs(directories):
 
     # First, group all files by size
     for directory in directories:
-        sub_errors = index_files_by_size(directory, files_by_size)
+        sub_errors = index_files_by_size(directory, files_by_size, exclude_dirs)
         errors_in_total += sub_errors
 
     all_duplicates = []
