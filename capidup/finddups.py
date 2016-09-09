@@ -258,12 +258,13 @@ def find_duplicates_in_dirs(directories):
     `errors` is a list of error messages that occurred. If empty, there were no
     errors.
 
-    For example, assuming ``./a1`` and ``dir1/a2`` are identical, ``dir1/c1`` and
-    ``dir2/c2`` are identical, and ``dir2/b`` is different from all others:
+    For example, assuming ``./a1`` and ``/dir1/a2`` are identical,
+    ``/dir1/c1`` and ``/dir2/c2`` are identical, and ``/dir2/b`` is
+    different from all others:
 
-      >>> dups, errs = find_duplicates(['.', 'dir1', 'dir2'])
+      >>> dups, errs = find_duplicates_in_dirs(['.', '/dir1', '/dir2'])
       >>> dups
-      [['./a1', 'dir1/a2'], ['dir1/c1', 'dir2/c2']]
+      [['./a1', '/dir1/a2'], ['/dir1/c1', '/dir2/c2']]
       >>> errors
       []
 
