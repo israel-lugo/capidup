@@ -48,7 +48,7 @@ def test_nonexistent(tmpdir, monkeypatch):
     monkeypatch.setattr(finddups.os, 'walk', fake_walk)
 
     d = {}
-    errors = finddups.index_files_by_size(str(tmpdir), d)
+    errors = finddups.index_files_by_size(str(tmpdir), d, [])
 
     assert not d
     assert len(errors) == 2
