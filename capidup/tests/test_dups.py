@@ -66,7 +66,7 @@ weird_filenames = [
 
 # Array of data for test_find_dups_in_dirs. Each item is a tuple of
 # tuples: file contents, grouped by those which are equal.
-testdata = [
+file_groups_data = [
     (   # 1 group of 2 duplicate files
         ("a",) * 2,
     ),
@@ -231,7 +231,7 @@ def setup_flat_read_errors(tmpdir, count):
     return read_errors
 
 
-@pytest.mark.parametrize("file_groups", testdata)
+@pytest.mark.parametrize("file_groups", file_groups_data)
 @pytest.mark.parametrize("num_index_errors", index_errors_data)
 @pytest.mark.parametrize("num_read_errors", read_errors_data)
 @pytest.mark.parametrize("flat", [True, False])
