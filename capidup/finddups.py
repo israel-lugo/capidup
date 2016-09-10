@@ -109,7 +109,7 @@ def prune_subdirs(subdirs, exclude_dirs):
     return [d for d in subdirs if not should_be_excluded(d, exclude_dirs)]
 
 
-def index_files_by_size(root, files_by_size, exclude_dirs):
+def index_files_by_size(root, files_by_size, exclude_dirs, exclude_files):
     """Recursively index files under a root directory.
 
     Each regular file is added *in-place* to the files_by_size dictionary,
@@ -117,6 +117,7 @@ def index_files_by_size(root, files_by_size, exclude_dirs):
     lists of filenames, indexed by file size.
 
     exclude_dirs is a list of glob patterns to exclude directories.
+    exclude_files is a list of glob patterns to exclude files.
 
     Returns True if there were any I/O errors while listing directories.
 
@@ -127,6 +128,9 @@ def index_files_by_size(root, files_by_size, exclude_dirs):
     # encapsulate the value in a list, so we can modify it by reference
     # inside the auxiliary function
     errors = []
+
+    # XXX: shut up linters about unused parameter
+    dummy = exclude_files
 
     def _print_error(error):
         """Print a listing error to stderr.
@@ -282,12 +286,15 @@ def find_duplicates(filenames, max_size):
 
 
 
-def find_duplicates_in_dirs(directories, exclude_dirs=None):
+def find_duplicates_in_dirs(directories, exclude_dirs=None, exclude_files=None):
     """Recursively scan a list of directories, looking for duplicate files.
 
     `exclude_dirs`, if provided, should be a list of glob patterns.
     Subdirectories whose names match these patterns are excluded from the
     scan.
+
+    `exclude_files`, if provided, should be a list of glob patterns. Files
+    whose names match these patterns are excluded from the scan.
 
     Returns a 2-tuple of two values: ``(duplicate_groups, errors)``.
 
@@ -299,10 +306,10 @@ def find_duplicates_in_dirs(directories, exclude_dirs=None):
 
     For example, assuming ``./a1`` and ``/dir1/a2`` are identical,
     ``/dir1/c1`` and ``/dir2/c2`` are identical, ``/dir2/b`` is different
-    from all others, and that any subdirectories called ``tmp`` should not
-    be scanned:
+    from all others, that any subdirectories called ``tmp`` should not
+    be scanned, and that files ending in ``.bak`` should be ignored:
 
-      >>> dups, errs = find_duplicates_in_dirs(['.', '/dir1', '/dir2'], ['tmp'])
+      >>> dups, errs = find_duplicates_in_dirs(['.', '/dir1', '/dir2'], ['tmp'], ['*.bak'])
       >>> dups
       [['./a1', '/dir1/a2'], ['/dir1/c1', '/dir2/c2']]
       >>> errors
@@ -312,12 +319,15 @@ def find_duplicates_in_dirs(directories, exclude_dirs=None):
     if exclude_dirs is None:
         exclude_dirs = []
 
+    if exclude_files is None:
+        exclude_files = []
+
     errors_in_total = []
     files_by_size = {}
 
     # First, group all files by size
     for directory in directories:
-        sub_errors = index_files_by_size(directory, files_by_size, exclude_dirs)
+        sub_errors = index_files_by_size(directory, files_by_size, exclude_dirs, exclude_files)
         errors_in_total += sub_errors
 
     all_duplicates = []
