@@ -116,7 +116,7 @@ def index_files_by_size(root, files_by_size, exclude_dirs):
     according to the file size. This is a (possibly empty) dictionary of
     lists of filenames, indexed by file size.
 
-    exclude_dirs is a list of directory names that should be excluded.
+    exclude_dirs is a list of glob patterns to exclude directories.
 
     Returns True if there were any I/O errors while listing directories.
 
@@ -285,7 +285,7 @@ def find_duplicates(filenames, max_size):
 def find_duplicates_in_dirs(directories, exclude_dirs=None):
     """Recursively scan a list of directories, looking for duplicate files.
 
-    `exclude_dirs`, if provided, should be a list of shell patterns.
+    `exclude_dirs`, if provided, should be a list of glob patterns.
     Subdirectories whose names match these patterns are excluded from the
     scan.
 
@@ -299,10 +299,10 @@ def find_duplicates_in_dirs(directories, exclude_dirs=None):
 
     For example, assuming ``./a1`` and ``/dir1/a2`` are identical,
     ``/dir1/c1`` and ``/dir2/c2`` are identical, ``/dir2/b`` is different
-    from all others, and that any subdirectories called ``backup`` should
-    not be scanned:
+    from all others, and that any subdirectories called ``tmp`` should not
+    be scanned:
 
-      >>> dups, errs = find_duplicates_in_dirs(['.', '/dir1', '/dir2'], ['backup'])
+      >>> dups, errs = find_duplicates_in_dirs(['.', '/dir1', '/dir2'], ['tmp'])
       >>> dups
       [['./a1', '/dir1/a2'], ['/dir1/c1', '/dir2/c2']]
       >>> errors
