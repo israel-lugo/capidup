@@ -30,10 +30,13 @@ import pytest
 import capidup.finddups as finddups
 
 
-# Array of data for test_exclude_dirs. Each item is a tuple of lists: dirs
-# to create, exclude patterns, and expected dirs (not matched by the
-# pattern).
-exclude_dirs_data = [
+reference_file="referencefile"
+
+
+# Array of data for test_exclude_dirs and test_exclude_files. Each item is
+# a tuple of lists: dirs/files to create, exclude patterns, and expected
+# dirs/files (not matched by the pattern).
+exclude_data = [
     # no exclude pattern returns all results
     (["a", "b", "c"], [], ["a", "b", "c"]),
     # exclude pattern that doesn't match
@@ -56,6 +59,10 @@ exclude_dirs_data = [
     (["a", "b", "aa", "bb", "xx"], ["*"], []),
     # ? matches any character
     (["a", "b", "xy", "xz"], ["x?"], ["a", "b"]),
+    # exclude extension (*.bak)
+    (["a.txt", "a.bak", "abak", "a.bak.txt"], ["*.bak"], ["a.txt", "abak", "a.bak.txt"]),
+    # exclude extension with no prefix name
+    (["a.txt", ".tmp", "a.tmp", ".txt"], ["*.tmp"], ["a.txt", ".txt"]),
 ]
 
 
@@ -76,7 +83,7 @@ def unnest_sequence(seq):
     return functools.reduce(class_.__add__, seq, class_())
 
 
-@pytest.mark.parametrize("exclude_dirs_info", exclude_dirs_data)
+@pytest.mark.parametrize("exclude_dirs_info", exclude_data)
 def test_exclude_dirs(tmpdir, exclude_dirs_info):
     """Test excluding directories.
 
@@ -121,3 +128,46 @@ def test_exclude_dirs(tmpdir, exclude_dirs_info):
     result_dirs.sort()
     assert result_dirs == expected_dirs
 
+
+@pytest.mark.parametrize("exclude_files_info", exclude_data)
+def test_exclude_files(tmpdir, exclude_files_info):
+    """Test excluding files.
+
+    Receives a tmpdir fixture and a tuple (files, exclude_files,
+    expected_files).
+
+    Creates the specified files, all identical, plus a reference file to
+    serve as comparison with them. Then calls find_duplicates_in_dirs with
+    the specified exclude pattern. Any file not excluded will be detected
+    as a duplicate of the reference file.
+
+    The global variable reference_file contains the name of the reference
+    file to be created. The files to create should not contain this name,
+    to avoid collisions.
+
+    """
+    files, exclude_files, expected_files = exclude_files_info
+
+    # create the files, all identical
+    for fname in [reference_file,] + files:
+        f = tmpdir.join(fname)
+        f.write("a")
+
+    dup_groups, errors = finddups.find_duplicates_in_dirs([str(tmpdir)], exclude_files=exclude_files)
+
+    assert not errors
+
+    if not expected_files:
+        assert not dup_groups
+
+    else:
+        assert len(dup_groups) == 1
+
+        prefix_len = len(str(tmpdir)) + len(os.path.sep)
+
+        result_files = [path[prefix_len:].partition(os.path.sep)[0] for path in dup_groups[0]]
+        result_files.remove(reference_file)
+
+        expected_files.sort()
+        result_files.sort()
+        assert result_files == expected_files
