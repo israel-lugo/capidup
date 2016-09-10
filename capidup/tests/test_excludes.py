@@ -102,6 +102,8 @@ def test_exclude_dirs(tmpdir, exclude_dirs_info):
 
     dup_groups, errors = finddups.find_duplicates_in_dirs([str(tmpdir)], exclude_dirs=exclude_dirs)
 
+    assert not errors
+
     flattened_files = unnest_sequence(dup_groups)
 
     # generate a list (without repetitions) of the subdirs in the results
