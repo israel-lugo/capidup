@@ -129,7 +129,6 @@ def test_exclude_dirs(tmpdir, exclude_dirs_info):
     assert result_dirs == expected_dirs
 
 
-@pytest.mark.xfail
 @pytest.mark.parametrize("exclude_files_info", exclude_data)
 def test_exclude_files(tmpdir, exclude_files_info):
     """Test excluding files.

@@ -81,32 +81,32 @@ def round_up_to_mult(n, mult):
     return ((n + mult - 1) // mult) * mult
 
 
-def should_be_excluded(subdir, exclude_dirs):
-    """Check if a subdir should be excluded.
+def should_be_excluded(name, exclude_patterns):
+    """Check if a name should be excluded.
 
-    Returns True if subdir matches at least one of the exclude patterns in
-    the exclude_dirs list.
+    Returns True if name matches at least one of the exclude patterns in
+    the exclude_patterns list.
 
     """
-    for pattern in exclude_dirs:
-        if fnmatch.fnmatch(subdir, pattern):
+    for pattern in exclude_patterns:
+        if fnmatch.fnmatch(name, pattern):
             return True
     return False
 
 
-def prune_subdirs(subdirs, exclude_dirs):
-    """Prune subdirs from an index crawl.
+def prune_names(names, exclude_patterns):
+    """Prune subdirs or files from an index crawl.
 
     This is used to control the search performed by os.walk() in
     index_files_by_size().
 
-    subdirs is the list of subdirectories in the current directory, to be
-    pruned as per the exclude_dirs list.
+    names is the list of file or subdir names, to be pruned as per the
+    exclude_patterns list.
 
-    Returns a new (possibly pruned) subdirs list.
+    Returns a new (possibly pruned) names list.
 
     """
-    return [d for d in subdirs if not should_be_excluded(d, exclude_dirs)]
+    return [x for x in names if not should_be_excluded(x, exclude_patterns)]
 
 
 def index_files_by_size(root, files_by_size, exclude_dirs, exclude_files):
@@ -129,9 +129,6 @@ def index_files_by_size(root, files_by_size, exclude_dirs, exclude_files):
     # inside the auxiliary function
     errors = []
 
-    # XXX: shut up linters about unused parameter
-    dummy = exclude_files
-
     def _print_error(error):
         """Print a listing error to stderr.
 
@@ -152,7 +149,8 @@ def index_files_by_size(root, files_by_size, exclude_dirs, exclude_files):
     for curr_dir, subdirs, filenames in os.walk(root, topdown=True, onerror=_print_error):
 
         # modify subdirs in-place to influence os.walk
-        subdirs[:] = prune_subdirs(subdirs, exclude_dirs)
+        subdirs[:] = prune_names(subdirs, exclude_dirs)
+        filenames = prune_names(filenames, exclude_files)
 
         for base_filename in filenames:
             full_path = os.path.join(curr_dir, base_filename)

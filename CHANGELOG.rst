@@ -16,6 +16,9 @@ Added
 - `find_duplicates_in_dirs` can now exclude directories, through a new optional
   parameter `exclude_dirs`. See `issue #10`_.
 
+- `find_duplicates_in_dirs` can now exclude files, through a new optional
+  parameter `exclude_files`. See `issue #15`_.
+
 Changed
 .......
 
@@ -39,5 +42,6 @@ First production release.
 .. _issue #9: https://github.com/israel-lugo/capidup/issues/9
 .. _issue #10: https://github.com/israel-lugo/capidup/issues/10
 .. _issue #12: https://github.com/israel-lugo/capidup/issues/12
+.. _issue #15: https://github.com/israel-lugo/capidup/issues/15
 
 .. _1.0.1: https://github.com/israel-lugo/capidup/tree/v1.0.1
