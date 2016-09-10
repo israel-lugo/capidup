@@ -94,15 +94,14 @@ def should_be_excluded(subdir, exclude_dirs):
     return False
 
 
-def prune_subdirs(subdirs, cur_dir, exclude_dirs):
+def prune_subdirs(subdirs, exclude_dirs):
     """Prune subdirs from an index crawl.
 
     This is used to control the search performed by os.walk() in
     index_files_by_size().
 
-    cur_dir is the path of the current directory. subdirs is the list of
-    subdirectories in the current directory, to be pruned as per the
-    exclude_dirs list.
+    subdirs is the list of subdirectories in the current directory, to be
+    pruned as per the exclude_dirs list.
 
     Returns a new (possibly pruned) subdirs list.
 
@@ -149,7 +148,7 @@ def index_files_by_size(root, files_by_size, exclude_dirs):
     for curr_dir, subdirs, filenames in os.walk(root, topdown=True, onerror=_print_error):
 
         # modify subdirs in-place to influence os.walk
-        subdirs[:] = prune_subdirs(subdirs, curr_dir, exclude_dirs)
+        subdirs[:] = prune_subdirs(subdirs, exclude_dirs)
 
         for base_filename in filenames:
             full_path = os.path.join(curr_dir, base_filename)
