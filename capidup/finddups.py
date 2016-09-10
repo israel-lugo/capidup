@@ -283,7 +283,7 @@ def find_duplicates(filenames, max_size):
 
 
 
-def find_duplicates_in_dirs(directories, exclude_dirs=[]):
+def find_duplicates_in_dirs(directories, exclude_dirs=None):
     """Recursively scan a list of directories, looking for duplicate files.
 
     `exclude_dirs`, if provided, should be a list of shell patterns.
@@ -310,6 +310,9 @@ def find_duplicates_in_dirs(directories, exclude_dirs=[]):
       []
 
     """
+    if exclude_dirs is None:
+        exclude_dirs = []
+
     errors_in_total = []
     files_by_size = {}
 
