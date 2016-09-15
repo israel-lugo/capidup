@@ -239,7 +239,7 @@ def find_duplicates(filenames, max_size):
       >>> dups, errs = find_duplicates(['a1', 'a2', 'b', 'c1', 'c2'], 1024)
       >>> dups
       [['a1', 'a2'], ['c1', 'c2']]
-      >>> errors
+      >>> errs
       []
 
     Note that ``b`` is not included in the results, as it has no duplicates.
@@ -310,7 +310,7 @@ def find_duplicates_in_dirs(directories, exclude_dirs=None, exclude_files=None):
       >>> dups, errs = find_duplicates_in_dirs(['.', '/dir1', '/dir2'], ['tmp'], ['*.bak'])
       >>> dups
       [['./a1', '/dir1/a2'], ['/dir1/c1', '/dir2/c2']]
-      >>> errors
+      >>> errs
       []
 
     """
