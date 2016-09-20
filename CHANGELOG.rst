@@ -3,7 +3,15 @@ CapiDup Change Log
 
 All releases and notable changes will be described here.
 
-CapiDup adheres to `semantic versioning <http://semver.org>`_.
+CapiDup adheres to `semantic versioning <http://semver.org>`_. In short, this
+means the version numbers follow a three-part scheme: *major version*, *minor
+version* and *patch number*.
+
+The *major version* is incremented for releases that break compatibility, such
+as removing or altering existing functionality. The *minor version* is
+incremented for releases that add new visible features, but are still backwards
+compatible. The *patch number* is incremented for minor changes such as bug
+fixes, that don't change the public interface.
 
 
 Unreleased__
