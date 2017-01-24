@@ -23,7 +23,6 @@
 
 """Black box duplicates testing, simple tests."""
 
-import os
 import pytest
 
 import capidup.finddups as finddups
