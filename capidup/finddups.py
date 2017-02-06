@@ -109,7 +109,8 @@ def prune_names(names, exclude_patterns):
     return [x for x in names if not should_be_excluded(x, exclude_patterns)]
 
 
-def index_files_by_size(root, files_by_size, exclude_dirs, exclude_files):
+def index_files_by_size(root, files_by_size, exclude_dirs, exclude_files,
+        follow_dirlinks):
     """Recursively index files under a root directory.
 
     Each regular file is added *in-place* to the files_by_size dictionary,
@@ -118,6 +119,9 @@ def index_files_by_size(root, files_by_size, exclude_dirs, exclude_files):
 
     exclude_dirs is a list of glob patterns to exclude directories.
     exclude_files is a list of glob patterns to exclude files.
+
+    follow_dirlinks controls whether to follow symbolic links to
+    subdirectories while crawling.
 
     Returns True if there were any I/O errors while listing directories.
 
@@ -146,7 +150,8 @@ def index_files_by_size(root, files_by_size, exclude_dirs, exclude_files):
     # XXX: The actual root may be matched by the exclude pattern. Should we
     # prune it as well?
 
-    for curr_dir, subdirs, filenames in os.walk(root, topdown=True, onerror=_print_error):
+    for curr_dir, subdirs, filenames in os.walk(root, topdown=True,
+            onerror=_print_error, followlinks=follow_dirlinks):
 
         # modify subdirs in-place to influence os.walk
         subdirs[:] = prune_names(subdirs, exclude_dirs)
@@ -284,7 +289,8 @@ def find_duplicates(filenames, max_size):
 
 
 
-def find_duplicates_in_dirs(directories, exclude_dirs=None, exclude_files=None):
+def find_duplicates_in_dirs(directories, exclude_dirs=None, exclude_files=None,
+        follow_dirlinks=False):
     """Recursively scan a list of directories, looking for duplicate files.
 
     `exclude_dirs`, if provided, should be a list of glob patterns.
@@ -293,6 +299,9 @@ def find_duplicates_in_dirs(directories, exclude_dirs=None, exclude_files=None):
 
     `exclude_files`, if provided, should be a list of glob patterns. Files
     whose names match these patterns are excluded from the scan.
+
+    ``follow_dirlinks`` controls whether to follow symbolic links to
+    subdirectories while crawling.
 
     Returns a 2-tuple of two values: ``(duplicate_groups, errors)``.
 
@@ -325,7 +334,8 @@ def find_duplicates_in_dirs(directories, exclude_dirs=None, exclude_files=None):
 
     # First, group all files by size
     for directory in directories:
-        sub_errors = index_files_by_size(directory, files_by_size, exclude_dirs, exclude_files)
+        sub_errors = index_files_by_size(directory, files_by_size, exclude_dirs,
+                                         exclude_files, follow_dirlinks)
         errors_in_total += sub_errors
 
     all_duplicates = []

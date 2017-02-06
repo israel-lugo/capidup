@@ -50,7 +50,7 @@ def test_nonexistent(tmpdir, monkeypatch):
     monkeypatch.setattr(finddups.os, 'walk', fake_walk)
 
     d = {}
-    errors = finddups.index_files_by_size(str(tmpdir), d, [], [])
+    errors = finddups.index_files_by_size(str(tmpdir), d, [], [], False)
 
     assert not d
     assert len(errors) == 2
@@ -60,7 +60,6 @@ def test_nonexistent(tmpdir, monkeypatch):
         assert name in error_lines
 
 
-@pytest.mark.xfail
 @pytest.mark.parametrize("follow_dirlinks", [False, True])
 def test_followlinks(tmpdir, monkeypatch, follow_dirlinks):
     """Test following symbolic links to subdirectories.
