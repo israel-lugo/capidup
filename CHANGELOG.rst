@@ -16,7 +16,11 @@ fixes, that don't change the public interface.
 
 Unreleased__
 ------------
-__ https://github.com/israel-lugo/capidup/compare/v1.0.1...HEAD
+__ https://github.com/israel-lugo/capidup/compare/v1.1.0...HEAD
+
+
+1.1.0_ — 2017-02-06
+-------------------
 
 Added
 .....
@@ -46,7 +50,6 @@ Fixed
 1.0.1_ — 2016-07-12
 -------------------
 
-
 First production release.
 
 
@@ -56,4 +59,5 @@ First production release.
 .. _issue #15: https://github.com/israel-lugo/capidup/issues/15
 .. _issue #16: https://github.com/israel-lugo/capidup/issues/16
 
+.. _1.1.0: https://github.com/israel-lugo/capidup/tree/v1.1.0
 .. _1.0.1: https://github.com/israel-lugo/capidup/tree/v1.0.1
