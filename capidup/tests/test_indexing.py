@@ -22,6 +22,8 @@
 """White box file indexing testing."""
 
 
+import pytest
+
 import capidup.finddups as finddups
 
 
@@ -56,3 +58,26 @@ def test_nonexistent(tmpdir, monkeypatch):
     error_lines = '\n'.join(errors)
     for name in ('file1', 'file2'):
         assert name in error_lines
+
+
+@pytest.mark.xfail
+@pytest.mark.parametrize("follow_dirlinks", [False, True])
+def test_followlinks(tmpdir, monkeypatch, follow_dirlinks):
+    """Test following symbolic links to subdirectories.
+
+    This test makes sure that os.walk() gets called with the appropriate
+    argument to follow links, if and only if find_duplicates_in_dirs() is
+    called with follow_dirlinks=True.
+
+    """
+    def fake_walk(top, topdown=True, onerror=None, followlinks=False):
+        """Fake os.walk() that validates its followlinks argument."""
+        assert followlinks == follow_dirlinks
+
+        return []
+
+    # patch finddup's os module to replace walk() with our fake_walk()
+    monkeypatch.setattr(finddups.os, 'walk', fake_walk)
+
+    finddups.find_duplicates_in_dirs(str(tmpdir), follow_dirlinks=follow_dirlinks)
+
