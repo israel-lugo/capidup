@@ -53,10 +53,10 @@ def test_nonexistent(tmpdir, monkeypatch):
     errors = finddups.index_files_by_size(str(tmpdir), d, [], [], False)
 
     assert not d
-    assert len(errors) == 2
+    assert len(errors) == 4
 
     error_lines = '\n'.join(errors)
-    for name in ('file1', 'file2'):
+    for name in ('subdir1', 'subdir2', 'file1', 'file2'):
         assert name in error_lines
 
 

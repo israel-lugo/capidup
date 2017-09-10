@@ -109,6 +109,45 @@ def prune_names(names, exclude_patterns):
     return [x for x in names if not should_be_excluded(x, exclude_patterns)]
 
 
+def filter_visited(curr_dir, subdirs, already_visited, on_error):
+    """Filter subdirs that have already been visited.
+
+    This is used to avoid loops in the search performed by os.walk() in
+    index_files_by_size.
+
+    curr_dir is the path of the current directory, as returned by os.walk().
+
+    subdirs is the list of subdirectories for the current directory, as
+    returned by os.walk().
+
+    already_visited is a set of tuples (st_dev, st_ino) of already
+    visited directories; it will be modified *in-place* to include the
+    directories in subdirs.
+
+    on error is a function f(OSError) -> None, to be called in case of
+    error.
+
+    Returns a new (possibly filtered) subdirs list.
+
+    """
+    filtered = []
+
+    for subdir in subdirs:
+        full_path = os.path.join(curr_dir, subdir)
+        try:
+            file_info = os.stat(full_path)
+        except OSError as e:
+            on_error(e)
+            continue
+
+        dev_inode = (file_info.st_dev, file_info.st_ino)
+        if dev_inode not in already_visited:
+            filtered.append(subdir)
+            already_visited.add(dev_inode)
+
+    return filtered
+
+
 def index_files_by_size(root, files_by_size, exclude_dirs, exclude_files,
         follow_dirlinks):
     """Recursively index files under a root directory.
@@ -132,6 +171,7 @@ def index_files_by_size(root, files_by_size, exclude_dirs, exclude_files,
     # encapsulate the value in a list, so we can modify it by reference
     # inside the auxiliary function
     errors = []
+    already_visited = set()
 
     def _print_error(error):
         """Print a listing error to stderr.
@@ -156,6 +196,10 @@ def index_files_by_size(root, files_by_size, exclude_dirs, exclude_files,
         # modify subdirs in-place to influence os.walk
         subdirs[:] = prune_names(subdirs, exclude_dirs)
         filenames = prune_names(filenames, exclude_files)
+
+        # remove subdirs that have already been visited (loops can happen
+        # if there is a symlink closed loop and follow_dirlinks==True)
+        subdirs[:] = filter_visited(curr_dir, subdirs, already_visited, _print_error)
 
         for base_filename in filenames:
             full_path = os.path.join(curr_dir, base_filename)

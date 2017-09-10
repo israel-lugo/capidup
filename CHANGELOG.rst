@@ -19,6 +19,14 @@ Unreleased__
 __ https://github.com/israel-lugo/capidup/compare/v1.1.0...HEAD
 
 
+Changed
+.......
+
+- Detect directory loops while crawling. Can happen e.g. if `follow_dirlinks`
+  is True and there are symlinks pointing to parent directories. See
+  `issue #17`_.
+
+
 1.1.0_ — 2017-02-06
 -------------------
 
@@ -58,6 +66,7 @@ First production release.
 .. _issue #12: https://github.com/israel-lugo/capidup/issues/12
 .. _issue #15: https://github.com/israel-lugo/capidup/issues/15
 .. _issue #16: https://github.com/israel-lugo/capidup/issues/16
+.. _issue #17: https://github.com/israel-lugo/capidup/issues/17
 
 .. _1.1.0: https://github.com/israel-lugo/capidup/tree/v1.1.0
 .. _1.0.1: https://github.com/israel-lugo/capidup/tree/v1.0.1
