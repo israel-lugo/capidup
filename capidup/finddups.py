@@ -42,6 +42,7 @@ import os
 import stat
 import hashlib
 import fnmatch
+import errno
 
 from capidup import py3compat
 
@@ -144,6 +145,8 @@ def filter_visited(curr_dir, subdirs, already_visited, on_error):
         if dev_inode not in already_visited:
             filtered.append(subdir)
             already_visited.add(dev_inode)
+        else:
+            on_error(OSError(errno.ELOOP, "directory loop detected", full_path))
 
     return filtered
 
