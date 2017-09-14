@@ -110,7 +110,7 @@ def prune_names(names, exclude_patterns):
     return [x for x in names if not should_be_excluded(x, exclude_patterns)]
 
 
-def filter_visited(curr_dir, subdirs, already_visited, on_error):
+def filter_visited(curr_dir, subdirs, already_visited, follow_dirlinks, on_error):
     """Filter subdirs that have already been visited.
 
     This is used to avoid loops in the search performed by os.walk() in
@@ -136,9 +136,13 @@ def filter_visited(curr_dir, subdirs, already_visited, on_error):
     for subdir in subdirs:
         full_path = os.path.join(curr_dir, subdir)
         try:
-            file_info = os.stat(full_path)
+            file_info = os.stat(full_path) if follow_dirlinks else os.lstat(full_path)
         except OSError as e:
             on_error(e)
+            continue
+
+        if not follow_dirlinks and stat.S_ISLNK(file_info.st_mode):
+            # following links to dirs is disabled, ignore this one
             continue
 
         dev_inode = (file_info.st_dev, file_info.st_ino)
@@ -200,9 +204,11 @@ def index_files_by_size(root, files_by_size, exclude_dirs, exclude_files,
         subdirs[:] = prune_names(subdirs, exclude_dirs)
         filenames = prune_names(filenames, exclude_files)
 
-        # remove subdirs that have already been visited (loops can happen
-        # if there is a symlink closed loop and follow_dirlinks==True)
-        subdirs[:] = filter_visited(curr_dir, subdirs, already_visited, _print_error)
+        # remove subdirs that have already been visited; loops can happen
+        # if there's a symlink loop and follow_dirlinks==True, or if
+        # there's a hardlink loop (which is usually a corrupted filesystem)
+        subdirs[:] = filter_visited(curr_dir, subdirs, already_visited,
+                                    follow_dirlinks, _print_error)
 
         for base_filename in filenames:
             full_path = os.path.join(curr_dir, base_filename)
