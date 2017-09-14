@@ -201,8 +201,13 @@ def test_find_dups_in_dirs(tmpdir, file_groups, num_index_errors,
     assert len(dup_groups) == len(expected_dup_groups)
 
     # Check that duplicate groups match. The files may have been traversed
-    # in a different order from how we created them; sort both lists.
+    # in a different order from how we created them; do a deep sort of both
+    # lists.
+    for g in dup_groups:
+        g.sort()
     dup_groups.sort()
+    for g in expected_dup_groups:
+        g.sort()
     expected_dup_groups.sort()
     for i in range(len(dup_groups)):
         assert len(dup_groups[i]) == len(expected_dup_groups[i])

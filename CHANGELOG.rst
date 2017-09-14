@@ -26,6 +26,11 @@ Changed
   is True and there are symlinks pointing to parent directories. See
   `issue #17`_.
 
+Fixed
+.....
+
+- Fix occasional false negatives in one of the unit tests. See `issue #19`.
+
 
 1.1.0_ — 2017-02-06
 -------------------
@@ -67,6 +72,7 @@ First production release.
 .. _issue #15: https://github.com/israel-lugo/capidup/issues/15
 .. _issue #16: https://github.com/israel-lugo/capidup/issues/16
 .. _issue #17: https://github.com/israel-lugo/capidup/issues/17
+.. _issue #19: https://github.com/israel-lugo/capidup/issues/19
 
 .. _1.1.0: https://github.com/israel-lugo/capidup/tree/v1.1.0
 .. _1.0.1: https://github.com/israel-lugo/capidup/tree/v1.0.1
