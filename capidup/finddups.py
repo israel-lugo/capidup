@@ -122,16 +122,17 @@ def filter_visited(curr_dir, subdirs, already_visited, follow_dirlinks, on_error
     returned by os.walk().
 
     already_visited is a set of tuples (st_dev, st_ino) of already
-    visited directories; it will be modified *in-place* to include the
-    directories in subdirs.
+    visited directories. This set will not be modified.
 
     on error is a function f(OSError) -> None, to be called in case of
     error.
 
-    Returns a new (possibly filtered) subdirs list.
+    Returns a tuple: the new (possibly filtered) subdirs list, and a new
+    set of already visited directories, now including the subdirs.
 
     """
     filtered = []
+    to_visit = set()
 
     for subdir in subdirs:
         full_path = os.path.join(curr_dir, subdir)
@@ -148,11 +149,11 @@ def filter_visited(curr_dir, subdirs, already_visited, follow_dirlinks, on_error
         dev_inode = (file_info.st_dev, file_info.st_ino)
         if dev_inode not in already_visited:
             filtered.append(subdir)
-            already_visited.add(dev_inode)
+            to_visit.add(dev_inode)
         else:
             on_error(OSError(errno.ELOOP, "directory loop detected", full_path))
 
-    return filtered
+    return filtered, already_visited.union(to_visit)
 
 
 def index_files_by_size(root, files_by_size, exclude_dirs, exclude_files,
@@ -207,8 +208,8 @@ def index_files_by_size(root, files_by_size, exclude_dirs, exclude_files,
         # remove subdirs that have already been visited; loops can happen
         # if there's a symlink loop and follow_dirlinks==True, or if
         # there's a hardlink loop (which is usually a corrupted filesystem)
-        subdirs[:] = filter_visited(curr_dir, subdirs, already_visited,
-                                    follow_dirlinks, _print_error)
+        subdirs[:], already_visited = filter_visited(curr_dir, subdirs,
+                already_visited, follow_dirlinks, _print_error)
 
         for base_filename in filenames:
             full_path = os.path.join(curr_dir, base_filename)
