@@ -133,6 +133,15 @@ def filter_visited(curr_dir, subdirs, already_visited, follow_dirlinks, on_error
     """
     filtered = []
     to_visit = set()
+    _already_visited = already_visited.copy()
+
+    try:
+        # mark the current directory as visited, so we catch symlinks to it
+        # immediately instead of after one iteration of the directory loop
+        file_info = os.stat(curr_dir) if follow_dirlinks else os.lstat(curr_dir)
+        _already_visited.add((file_info.st_dev, file_info.st_ino))
+    except OSError as e:
+        on_error(e)
 
     for subdir in subdirs:
         full_path = os.path.join(curr_dir, subdir)
@@ -147,13 +156,13 @@ def filter_visited(curr_dir, subdirs, already_visited, follow_dirlinks, on_error
             continue
 
         dev_inode = (file_info.st_dev, file_info.st_ino)
-        if dev_inode not in already_visited:
+        if dev_inode not in _already_visited:
             filtered.append(subdir)
             to_visit.add(dev_inode)
         else:
             on_error(OSError(errno.ELOOP, "directory loop detected", full_path))
 
-    return filtered, already_visited.union(to_visit)
+    return filtered, _already_visited.union(to_visit)
 
 
 def index_files_by_size(root, files_by_size, exclude_dirs, exclude_files,
